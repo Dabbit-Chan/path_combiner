@@ -272,30 +272,47 @@ class _PathUtil {
         }
       case CombineMethod.center:
         {
-          int index = (shortList.length / 2).floor();
-          shortList.insertAll(
-            index,
-            List.generate(
-              (longList.length - shortList.length),
-              (_) => shortList[index],
-            ),
-          );
+          final difference = longList.length - shortList.length;
+          final result = <T>[];
+
+          // Keep the extra samples around the midpoint. For an even-sized
+          // list, the two central samples share the inserted values; for an
+          // odd-sized list, there is one central sample.
+          final leftCenter = (shortList.length - 1) ~/ 2;
+          final rightCenter = shortList.length ~/ 2;
+          final leftExtra = difference ~/ 2;
+          final rightExtra = difference - leftExtra;
+
+          for (int i = 0; i < shortList.length; i++) {
+            result.add(shortList[i]);
+            if (leftCenter == rightCenter && i == leftCenter) {
+              result.addAll(List<T>.filled(difference, shortList[i]));
+            } else if (i == leftCenter) {
+              result.addAll(List<T>.filled(leftExtra, shortList[i]));
+            } else if (i == rightCenter) {
+              result.addAll(List<T>.filled(rightExtra, shortList[i]));
+            }
+          }
+
+          shortList
+            ..clear()
+            ..addAll(result);
           break;
         }
       case CombineMethod.space:
         {
-          int quotient = (longList.length / shortList.length).floor();
-          int residue = longList.length % shortList.length;
-          List<T> result = [];
-          for (T t in shortList) {
-            result.addAll(List.generate(quotient, (_) => t));
-            if (residue > 0) {
-              result.add(t);
-              residue--;
-            }
-          }
-          shortList.clear();
-          shortList.addAll(result);
+          final result = List<T>.generate(longList.length, (i) {
+            // Map both endpoints exactly and round the normalized position.
+            // This distributes the remainder as evenly as integer sampling
+            // allows, without front-loading it at the beginning.
+            final sourceIndex =
+                (i * (shortList.length - 1) / (longList.length - 1)).round();
+            return shortList[sourceIndex];
+          });
+
+          shortList
+            ..clear()
+            ..addAll(result);
           break;
         }
     }
