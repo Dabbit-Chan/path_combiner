@@ -52,6 +52,12 @@ class PathUtil {
     if (end == null) {
       return begin;
     }
+    if (t == 0) {
+      return begin;
+    }
+    if (t == 1) {
+      return end;
+    }
 
     Path result = Path();
 
@@ -106,6 +112,9 @@ class PathUtil {
       endPointList.add(endMetric.getTangentForOffset(i)!.position);
     }
 
+    beginPointList.add(beginMetric.getTangentForOffset(beginLength)!.position);
+    endPointList.add(endMetric.getTangentForOffset(endLength)!.position);
+
     // 处理两个list，使两个list的长度一致
     if (beginPointList.length != endPointList.length) {
       combineList(
@@ -119,13 +128,9 @@ class PathUtil {
       resultList.add(Offset.lerp(beginPointList[i], endPointList[i], t)!);
     }
 
-    result.moveTo(resultList[0].dx, resultList[0].dy);
     result.addPolygon(
-      List.generate(
-        resultList.length - 1,
-        (i) => resultList[i + 1],
-      ),
-      false,
+      resultList,
+      beginMetric.isClosed && endMetric.isClosed,
     );
   }
 
