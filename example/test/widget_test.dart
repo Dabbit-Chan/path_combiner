@@ -13,6 +13,9 @@ void main() {
   late List<PathExample> readyExamples;
 
   setUpAll(() async {
+    for (final choice in [...iconChoices, ...directionalChoices]) {
+      await choice.toPath();
+    }
     for (final example in pathExamples) {
       loadedPaths.add(await example.loadPaths());
     }
@@ -22,8 +25,8 @@ void main() {
     ];
   });
 
-  test('all five examples load actual font or geometric paths', () {
-    expect(loadedPaths, hasLength(5));
+  test('both icon examples load actual font paths', () {
+    expect(loadedPaths, hasLength(2));
     for (final paths in loadedPaths) {
       expect(paths, hasLength(2));
       for (final path in paths) {
@@ -35,8 +38,8 @@ void main() {
         expect(bounds.bottom, lessThanOrEqualTo(exampleCanvasSize + 0.001));
       }
     }
-    final left = loadedPaths[3][0];
-    final right = loadedPaths[3][1];
+    final left = loadedPaths[1][0];
+    final right = loadedPaths[1][1];
     var mirroredDifferences = 0;
     for (var horizontal = 35.37; horizontal < 205; horizontal += 10) {
       for (var vertical = 35.19; vertical < 205; vertical += 10) {
@@ -56,7 +59,7 @@ void main() {
     _setView(tester, const Size(900, 1200));
     await tester.pumpWidget(MyApp(examples: readyExamples));
     await tester.pumpAndSettle();
-    expect(find.text('Path Combiner Examples'), findsOneWidget);
+    expect(find.text('path / studio'), findsOneWidget);
 
     for (var index = 0; index < readyExamples.length; index++) {
       final chip = find.byKey(ValueKey('example-$index'));
@@ -80,6 +83,49 @@ void main() {
       await tester.pumpAndSettle();
       expect(_label(tester), readyExamples[index].startLabel);
     }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('start and end independently select either icon family',
+      (tester) async {
+    _setView(tester, const Size(1100, 1500));
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+    expect(_label(tester), 'Material · Home');
+    await tester.tap(find.byKey(const ValueKey('start-icon')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cupertino · Heart').last);
+    await tester.pumpAndSettle();
+    expect(_label(tester), 'Cupertino · Heart');
+    await tester.tap(find.byKey(const ValueKey('end-icon')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Material · Close').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('toggle-path')));
+    await tester.pumpAndSettle();
+    expect(_label(tester), 'Material · Close');
+    await tester.tap(find.byKey(const ValueKey('example-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('directional-icon')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Material · Reply').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('toggle-path')));
+    await tester.pumpAndSettle();
+    expect(_label(tester), 'RTL · 从右到左');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('real icon pickers fit a narrow screen with large text',
+      (tester) async {
+    _setView(tester, const Size(320, 780));
+    tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('start-icon')));
+    await tester.tap(find.byKey(const ValueKey('start-icon')));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 

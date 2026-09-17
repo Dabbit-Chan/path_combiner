@@ -1,11 +1,16 @@
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:path_combiner/path_combiner.dart';
 
+import 'studio_widgets.dart';
+
 class TextPathExample extends StatefulWidget {
-  const TextPathExample({super.key});
+  const TextPathExample({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<TextPathExample> createState() => _TextPathExampleState();
@@ -20,6 +25,7 @@ class _TextPathExampleState extends State<TextPathExample> {
   List<String> _labels = [];
   bool _showSecond = false;
   bool _loading = false;
+  bool _dirty = false;
   String? _error;
   int _request = 0;
   int _revision = 0;
@@ -86,6 +92,7 @@ class _TextPathExampleState extends State<TextPathExample> {
         _showSecond = false;
         _loading = false;
         _revision++;
+        _dirty = _first.text != labels[0] || _second.text != labels[1];
       });
     } catch (error) {
       if (!mounted || request != _request) return;
@@ -98,155 +105,174 @@ class _TextPathExampleState extends State<TextPathExample> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final selected = _showSecond ? 1 : 0;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Text → Path')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 680),
-              child: Column(
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const StudioHeading(
+          eyebrow: 'TEXT MORPH / 03',
+          title: '让文字，也有流动感。',
+          description: '输入两段文字，把想法变成轮廓，再看它们缓缓变形。',
+        ),
+        const SizedBox(height: 28),
+        StudioPanel(
+            child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text('输入两段文字，生成轮廓后切换播放动画。'),
-                  const SizedBox(height: 12),
-                  const Text(
-                    '示例内置 Roboto：适合英文、数字和常见符号，不含中文字形。'
-                    '中文需在项目中换用包含中文的静态 TTF/OTF 字体。'
-                    '支持换行；不进行阿拉伯文塑形、双向排版或 emoji 合成。',
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    key: const ValueKey('text-start'),
-                    controller: _first,
-                    minLines: 1,
-                    maxLines: 3,
-                    maxLength: 40,
-                    decoration: const InputDecoration(
-                      labelText: '起始 String',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    key: const ValueKey('text-end'),
-                    controller: _second,
-                    minLines: 1,
-                    maxLines: 3,
-                    maxLength: 40,
-                    decoration: const InputDecoration(
-                      labelText: '目标 String',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.icon(
-                    key: const ValueKey('generate-text'),
-                    onPressed: _loading ? null : _generate,
-                    icon: const Icon(Icons.draw),
-                    label: Text(_loading ? '正在生成…' : '生成两条 Path'),
-                  ),
-                  if (_loading) const LinearProgressIndicator(),
-                  if (_error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: Text(_error!,
-                          key: const ValueKey('text-error'),
-                          style: TextStyle(color: colors.error)),
-                    ),
-                  const SizedBox(height: 16),
-                  if (_paths != null) ...[
-                    Card(
-                      color: colors.primaryContainer,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Text(
-                              _labels[selected].trim().isEmpty
-                                  ? '（空白文本）'
-                                  : _labels[selected],
-                              key: const ValueKey('text-current'),
-                            ),
-                            const SizedBox(height: 12),
-                            AspectRatio(
-                              aspectRatio: _canvasSize.aspectRatio,
-                              child: FittedBox(
-                                child: SizedBox.fromSize(
-                                  size: _canvasSize,
-                                  child: PathCombiner(
-                                    key: ValueKey('text-preview-$_revision'),
-                                    path: _paths![selected],
-                                    color: colors.onPrimaryContainer,
-                                    strokeWidth: 1.5,
-                                    precision: 1.5,
-                                    duration: Duration(
-                                        milliseconds: _duration.round()),
-                                    combineMethod: _method,
-                                    curve: Curves.easeInOutCubic,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            FilledButton.tonalIcon(
-                              key: const ValueKey('toggle-text'),
-                              onPressed: _loading
-                                  ? null
-                                  : () => setState(() {
-                                        _showSecond = !_showSecond;
-                                      }),
-                              icon: const Icon(Icons.swap_horiz),
-                              label: const Text('切换文字'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Text('动画时长：${_duration.round()} ms'),
-                    Slider(
-                      value: _duration,
-                      min: 200,
-                      max: 2000,
-                      divisions: 9,
-                      onChanged: (value) => setState(() => _duration = value),
-                    ),
-                    DropdownButton<CombineMethod>(
-                      value: _method,
-                      isExpanded: true,
-                      items: [
-                        for (final method in CombineMethod.values)
-                          DropdownMenuItem(
-                              value: method, child: Text(method.name)),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) setState(() => _method = value);
-                      },
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  const Text('先按真实字宽排版，再使用相同比例缩小两段文本并居中。'
-                      '编辑后需重新生成。空白文本没有轮廓，与非空文本在动画中点直接切换。'),
-                  const SizedBox(height: 12),
-                  const SelectableText(
-                    "final first = await 'Hello'.toPath(\n"
-                    "  fontAsset: 'assets/fonts/Roboto-Regular.ttf',\n"
-                    "  fontSize: 80,\n"
-                    ");\n"
-                    "final second = await 'Flutter'.toPath(\n"
-                    "  fontAsset: 'assets/fonts/Roboto-Regular.ttf',\n"
-                    "  fontSize: 80,\n"
-                    ");",
-                    style: TextStyle(fontFamily: 'monospace', fontSize: 13),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+              const Text('写下你的起点与终点',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 20),
+              LayoutBuilder(builder: (context, constraints) {
+                final start = _input(_first, 'text-start', 'START / 起始文字');
+                final end = _input(_second, 'text-end', 'END / 目标文字');
+                if (constraints.maxWidth < 560) {
+                  return Column(
+                      children: [start, const SizedBox(height: 12), end]);
+                }
+                return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: start),
+                      const SizedBox(width: 20),
+                      Expanded(child: end),
+                    ]);
+              }),
+              const SizedBox(height: 12),
+              Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    FilledButton.icon(
+                        key: const ValueKey('generate-text'),
+                        onPressed: _loading ? null : _generate,
+                        icon: const Icon(Icons.auto_fix_high_rounded),
+                        label: Text(_loading ? '正在生成…' : '生成文字轮廓')),
+                    Text(_dirty ? '文字已修改，点击生成更新预览' : '支持英文、数字、符号与换行',
+                        style: const TextStyle(
+                            color: Color(0xFF697A73), fontSize: 12)),
+                  ]),
+              if (_loading)
+                const Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: LinearProgressIndicator()),
+              if (_error != null)
+                Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Text(_error!,
+                        key: const ValueKey('text-error'),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error))),
+            ])),
+        const SizedBox(height: 20),
+        if (_paths != null) ...[
+          PreviewStage(
+              child: Column(children: [
+            const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('LIVE TYPOGRAPHY',
+                    style: TextStyle(fontSize: 11, letterSpacing: 2))),
+            const SizedBox(height: 20),
+            Text(
+                _labels[selected].trim().isEmpty ? '（空白文本）' : _labels[selected],
+                key: const ValueKey('text-current'),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            Semantics(
+                label: '文字轮廓动画预览',
+                child: AspectRatio(
+                  aspectRatio: _canvasSize.aspectRatio,
+                  child: FittedBox(
+                      child: SizedBox.fromSize(
+                          size: _canvasSize,
+                          child: PathCombiner(
+                            key: ValueKey('text-preview-$_revision'),
+                            path: _paths![selected],
+                            color: studioMint,
+                            strokeWidth: 1.5,
+                            precision: 1.5,
+                            duration: Duration(milliseconds: _duration.round()),
+                            combineMethod: _method,
+                            curve: Curves.easeInOutCubic,
+                          ))),
+                )),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+                key: const ValueKey('toggle-text'),
+                style: FilledButton.styleFrom(
+                    backgroundColor: studioMint, foregroundColor: studioInk),
+                onPressed: _loading
+                    ? null
+                    : () => setState(() => _showSecond = !_showSecond),
+                icon: const Icon(Icons.swap_horiz_rounded),
+                label: const Text('切换文字')),
+            const SizedBox(height: 16),
+            const Text('STRING  →  PATH  →  MOTION',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 10, letterSpacing: 2, color: Color(0xFF93B6A7))),
+          ])),
+          const SizedBox(height: 20),
+          StudioPanel(
+              child: MotionControls(
+                  duration: _duration,
+                  method: _method,
+                  onDurationChanged: (value) =>
+                      setState(() => _duration = value),
+                  onMethodChanged: (value) => setState(() => _method = value))),
+        ],
+        const SizedBox(height: 20),
+        const StudioPanel(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('关于字体与排版', style: TextStyle(fontWeight: FontWeight.w700)),
+          SizedBox(height: 10),
+          Text(
+              '内置 Roboto，支持英文、数字及常见符号，不含中文字形。'
+              '中文需换用包含中文的静态 TTF / OTF 字体。\n'
+              '两段文本按真实字宽排版、统一缩放并居中；支持换行，不提供复杂文字塑形、双向排版或 emoji 合成。'
+              '空白文本没有轮廓，与非空文本在动画中点直接切换。',
+              style: TextStyle(
+                  fontSize: 12, height: 1.8, color: Color(0xFF697A73))),
+        ])),
+        const SizedBox(height: 20),
+        CodePanel(code: _code),
+      ],
     );
+    if (widget.embedded) return content;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Text / Studio')),
+      body: SafeArea(
+          child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                  child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1120),
+                      child: content)))),
+    );
+  }
+
+  Widget _input(TextEditingController controller, String key, String label) =>
+      TextField(
+        key: ValueKey(key),
+        controller: controller,
+        minLines: 1,
+        maxLines: 3,
+        maxLength: 40,
+        onChanged: (_) => setState(() => _dirty = true),
+        decoration: InputDecoration(
+            labelText: label, border: const OutlineInputBorder()),
+      );
+
+  String get _code {
+    final labels = _labels.isEmpty ? ['Hello', 'Flutter'] : _labels;
+    String literal(String value) => jsonEncode(value).replaceAll(r'$', r'\$');
+    return 'final start = await ${literal(labels[0])}.toPath(\n'
+        "  fontAsset: 'assets/fonts/Roboto-Regular.ttf',\n"
+        '  fontSize: 80,\n);\n'
+        'final end = await ${literal(labels[1])}.toPath(\n'
+        "  fontAsset: 'assets/fonts/Roboto-Regular.ttf',\n"
+        '  fontSize: 80,\n);\n\n'
+        '// 预览中另将两条路径统一缩放，并平移至画布中心。';
   }
 }
