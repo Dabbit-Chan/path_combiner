@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_combiner/path_combiner.dart';
-import 'package:path_combiner/src/open_type_font.dart';
+import 'package:path_combiner/src/fonts/open_type_font.dart';
 
 import 'font_fixture.dart';
 

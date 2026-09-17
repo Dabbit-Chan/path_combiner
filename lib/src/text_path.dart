@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
-import 'open_type_font.dart';
+import 'fonts/open_type_font.dart';
 
 /// Converts Unicode code points to font outlines using basic left-to-right
 /// layout. This is not a text shaping engine: kerning, ligatures, bidi ordering,

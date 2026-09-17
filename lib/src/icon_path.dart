@@ -6,7 +6,7 @@ import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart' show IconData;
 
-import 'open_type_font.dart';
+import 'fonts/open_type_font.dart';
 
 /// Extracts vector outlines from static OpenType/TrueType icon fonts.
 ///
