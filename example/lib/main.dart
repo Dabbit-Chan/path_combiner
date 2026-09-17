@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:path_combiner/path_combiner.dart';
 
 import 'path_examples.dart';
+import 'text_path_example.dart';
 
 void main() {
   runApp(const MyApp());
@@ -70,7 +71,19 @@ class _ExampleGalleryState extends State<ExampleGallery> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Path Combiner Examples')),
+      appBar: AppBar(
+        title: const Text('Path Combiner Examples'),
+        actions: [
+          IconButton(
+            key: const ValueKey('open-text-example'),
+            tooltip: 'Text → Path',
+            icon: const Icon(Icons.text_fields),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const TextPathExample()),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

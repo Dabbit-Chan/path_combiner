@@ -27,6 +27,56 @@ PathCombiner(
 
 Check [example](https://github.com/Dabbit-Chan/path_combiner/tree/main/example) for more.
 
+## Convert text to Path
+
+Text conversion uses the built-in font parser, with no glyph_path dependency:
+
+```dart
+final first = await 'Hello'.toPath(
+  fontAsset: 'assets/fonts/Roboto-Regular.ttf',
+  fontSize: 80,
+);
+final second = await 'Flutter'.toPath(
+  fontAsset: 'assets/fonts/Roboto-Regular.ttf',
+  fontSize: 80,
+  letterSpacing: 2,
+);
+```
+
+Import `package:path_combiner/path_combiner.dart` and initialize Flutter's binding
+before loading assets. Declare your font under `flutter: assets:` in your app's
+pubspec, or pass `fontData: ByteData` instead. Exactly one font source is required;
+the converter cannot extract the bytes of an arbitrary system/TextStyle font.
+Package font assets use their full `packages/package_name/...` asset key.
+
+- `fontSize` defaults to 48 and scales the font's em square. Characters keep
+  their individual advance widths; they are not separately stretched to fit.
+- `letterSpacing` defaults to 0, in logical pixels between code points.
+- `lineHeight` defaults to 1.2; the baseline spacing is `fontSize * lineHeight`.
+- `offset` defaults to zero and specifies the layout origin; the first baseline
+  uses the font's ascender. Visible ink may extend beyond the layout origin.
+- Spaces preserve their advance width, tabs expand to four spaces, and
+  CRLF/CR normalize to LF. An empty/blank string produces an empty path.
+- Fonts loaded from assets are cached. Use `TextPathConverter(bundle: bundle)`
+  for custom bundles and `clearCache()` to release its font cache.
+
+This is **basic left-to-right code-point layout**, not a replacement for
+Flutter's text shaping engine: no kerning, ligatures, combining-mark positioning,
+Arabic/Indic shaping, bidi reordering, automatic line wrapping or font fallback.
+Chinese characters work when the supplied supported static font contains them;
+the bundled example Roboto does not contain Chinese. Missing glyphs throw a
+`StateError` identifying their Unicode code point, rather than substituting boxes.
+The same static TrueType/CFF format limitations as icon conversion apply.
+
+Pass the generated paths to `PathCombiner`. When either path has no contours,
+the widget switches directly at the animation midpoint instead of trying to
+interpolate an empty contour list. Non-empty text uses the existing contour
+animation; it does not perform semantic letter-to-letter matching.
+
+The example's top-right **Text → Path** button opens two editable String inputs.
+Generate the paths, then toggle between them. The preview fits both strings
+using one shared scale and centers their visible outlines.
+
 ## Convert IconData to Path
 
 Import the library to use the asynchronous `IconData.toPath()` extension:

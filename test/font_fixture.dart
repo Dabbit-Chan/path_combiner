@@ -65,7 +65,8 @@ List<int> cffNumbers(List<int> values) => values.expand((value) {
       return [28, ...(_Writer()..int16(value)).bytes];
     }).toList();
 
-ByteData makeFont({bool longLocations = true, bool glyphArray = false}) {
+ByteData makeFont(
+    {bool longLocations = true, bool glyphArray = false, int? metricCount}) {
   final triangle = _simple([
     [const Offset(0, 0), const Offset(100, 0), const Offset(0, 100)],
   ]);
@@ -161,8 +162,18 @@ ByteData makeFont({bool longLocations = true, bool glyphArray = false}) {
   } else {
     locations.uint16(outlines.bytes.length ~/ 2);
   }
-  final head = ByteData(54)..setInt16(50, longLocations ? 1 : 0);
+  final head = ByteData(54)
+    ..setUint16(18, 1000)
+    ..setInt16(50, longLocations ? 1 : 0);
   final maxp = ByteData(6)..setUint16(4, glyphs.length);
+  final count = metricCount ?? glyphs.length;
+  final hhea = ByteData(36)
+    ..setInt16(4, 800)
+    ..setUint16(34, count);
+  final hmtx = ByteData(count * 4 + (glyphs.length - count) * 2);
+  for (var index = 0; index < count; index++) {
+    hmtx.setUint16(index * 4, index == 5 ? 150 : 100 + index * 100);
+  }
   final format4 = _Writer()
     ..uint16(4)
     ..uint16(glyphArray ? 32 + (glyphs.length - 1) * 2 : 32)
@@ -206,6 +217,8 @@ ByteData makeFont({bool longLocations = true, bool glyphArray = false}) {
   final tables = <String, List<int>>{
     'head': head.buffer.asUint8List(),
     'maxp': maxp.buffer.asUint8List(),
+    'hhea': hhea.buffer.asUint8List(),
+    'hmtx': hmtx.buffer.asUint8List(),
     'loca': locations.bytes,
     'glyf': outlines.bytes,
     'cmap': cmap.bytes,

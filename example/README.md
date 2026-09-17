@@ -12,6 +12,16 @@ flutter run
 
 ## 示例列表
 
+右上角文字按钮可打开 **Text → Path** 页面：输入起始和目标两个 String，
+点击「生成两条 Path」，再点击「切换文字」播放动画。支持空格、换行、
+动画时长与组合方式调节；修改输入后需要重新生成。
+
+文本示例直接使用自研解析器，不依赖 glyph_path。使用随项目附带的完整
+`assets/fonts/Roboto-Regular.ttf`，许可见同目录 `Roboto_LICENSE.txt`。
+该字体支持英文、数字及常见符号，不含中文；中文需要自行替换为包含中文的
+静态 TTF/OTF 字体。缺字会显示 Unicode 错误提示。此功能不提供复杂塑形、
+双向排版、连字或 emoji 合成。空白文字没有轮廓，动画中点直接切换。
+
 | 示例 | 转换 | 展示内容 |
 | --- | --- | --- |
 | Material 图标 | `Icons.home` ↔ `Icons.favorite` | 内置字体轮廓转 Path |
@@ -28,6 +38,7 @@ flutter run
 
 - `lib/main.dart`：示例选择、异步加载/失败重试、动画控制和代码展示。
 - `lib/path_examples.dart`：五组示例定义、字体转换调用与几何路径构造。
+- `lib/text_path_example.dart`：双字符串输入、文本转换、统一缩放及动画预览。
 
 字体转换不会在 `build()` 中发起。每组示例首次选中时加载，并缓存得到的两个
 `Path`；再次选择同组示例时复用结果，加载失败可以重试。

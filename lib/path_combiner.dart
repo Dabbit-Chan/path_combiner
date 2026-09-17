@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/widgets.dart';
 
 export 'src/icon_path.dart';
+export 'src/text_path.dart';
 
 enum CombineMethod {
   start,
@@ -169,8 +170,14 @@ class _PathUtil {
 
     Path result = Path();
 
-    List<ui.PathMetric> beginMetrics = begin.computeMetrics().toList();
-    List<ui.PathMetric> endMetrics = end.computeMetrics().toList();
+    List<ui.PathMetric> beginMetrics =
+        begin.computeMetrics().where((metric) => metric.length > 0).toList();
+    List<ui.PathMetric> endMetrics =
+        end.computeMetrics().where((metric) => metric.length > 0).toList();
+
+    if (beginMetrics.isEmpty || endMetrics.isEmpty) {
+      return t < 0.5 ? begin : end;
+    }
 
     if (beginMetrics.length != endMetrics.length) {
       combineList(beginMetrics, endMetrics, CombineMethod.space);

@@ -60,6 +60,39 @@ class OpenTypeFont {
   late final bool _longLocations;
   CffFont? _cff;
 
+  int get unitsPerEm {
+    final value = _uint16(_table('head', 54).offset + 18);
+    if (value < 16 || value > 16384) {
+      throw const FormatException('Invalid font unitsPerEm');
+    }
+    return value;
+  }
+
+  int get ascender => _int16(_table('hhea', 36).offset + 4);
+
+  double? advanceForCodePoint(int codePoint) {
+    final glyph = _glyphIndex(codePoint);
+    if (glyph == 0) return null;
+    if (glyph >= _glyphCount) {
+      throw const FormatException('Glyph index outside font');
+    }
+    final count = _uint16(_table('hhea', 36).offset + 34);
+    if (count == 0 || count > _glyphCount) {
+      throw const FormatException('Invalid numberOfHMetrics');
+    }
+    final metrics = _table('hmtx', count * 4 + (_glyphCount - count) * 2);
+    final index = glyph < count ? glyph : count - 1;
+    return _uint16(metrics.offset + index * 4).toDouble();
+  }
+
+  Path? textPathForCodePoint(int codePoint) {
+    if (_cff == null) return pathForCodePoint(codePoint);
+    final glyph = _glyphIndex(codePoint);
+    return glyph == 0
+        ? null
+        : _cff!.pathForGlyph(glyph, unitsPerEm: unitsPerEm);
+  }
+
   Path? pathForCodePoint(int codePoint) {
     final glyph = _glyphIndex(codePoint);
     if (glyph == 0) return null;
@@ -325,7 +358,8 @@ class OpenTypeFont {
   }
 
   _Table _table(String name, int minimumLength) {
-    final table = _tables[name]!;
+    final table = _tables[name];
+    if (table == null) throw FormatException('Missing font table: $name');
     _within(table, table.offset, minimumLength);
     return table;
   }

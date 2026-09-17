@@ -64,15 +64,22 @@ class CffFont {
   List<ByteData> _localSubroutines = [];
   Float64List? _matrix;
 
-  Path pathForGlyph(int glyph) {
+  Path pathForGlyph(int glyph, {int? unitsPerEm}) {
     if (glyph < 0 || glyph >= _glyphs.length) {
       throw const FormatException('CFF glyph index outside font');
     }
     final interpreter = _Type2(_localSubroutines, _globalSubroutines);
     interpreter.run(_glyphs[glyph]);
-    return _matrix == null
+    final path = _matrix == null
         ? interpreter.path
         : interpreter.path.transform(_matrix!);
+    if (unitsPerEm == null) return path;
+    final scale = _matrix == null ? unitsPerEm / 1000 : unitsPerEm.toDouble();
+    return path.transform(Float64List(16)
+      ..[0] = scale
+      ..[5] = scale
+      ..[10] = 1
+      ..[15] = 1);
   }
 }
 
