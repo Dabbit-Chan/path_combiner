@@ -4,6 +4,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
 
+export 'src/icon_path.dart';
+
 enum CombineMethod {
   start,
   end,
