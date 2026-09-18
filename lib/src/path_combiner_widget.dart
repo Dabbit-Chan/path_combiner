@@ -55,6 +55,7 @@ class _PathCombinerState extends AnimatedWidgetBaseState<PathCombiner> {
         begin: value as Path,
         precision: widget.precision,
         controller: _effectiveController,
+        paintingStyle: widget.paintingStyle,
       ),
     ) as PathTween?;
   }
@@ -62,6 +63,7 @@ class _PathCombinerState extends AnimatedWidgetBaseState<PathCombiner> {
   @override
   void didUpdateWidget(covariant PathCombiner oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _path?.paintingStyle = widget.paintingStyle;
     if (oldWidget.combineMethod != widget.combineMethod) {
       _effectiveController.combineMethod = widget.combineMethod;
     }

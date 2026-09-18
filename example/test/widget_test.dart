@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_combiner/path_combiner.dart';
+import 'package:path_combiner/src/path_lerp.dart';
 import 'package:path_combiner_example/main.dart';
 import 'package:path_combiner_example/path_examples.dart';
 
@@ -54,6 +55,97 @@ void main() {
       }
     }
     expect(mirroredDifferences, greaterThan(0));
+  });
+
+  test('menu and heart fill converges without losing the heart hole', () async {
+    final menu = await iconChoices[2].toPath();
+    final heart = await iconChoices[5].toPath();
+    expect(menu.computeMetrics(), hasLength(3));
+    expect(heart.computeMetrics(), hasLength(2));
+    const center = Offset(120, 120);
+    expect(heart.contains(center), isFalse);
+    for (final method in CombineMethod.values) {
+      final controller = PathCombineController()..combineMethod = method;
+      for (final pair in [
+        [menu, heart],
+        [heart, menu],
+      ]) {
+        for (final progress in [0.0001, 0.9999]) {
+          final expected = progress < 0.5 ? pair.first : pair.last;
+          final actual = PathUtil.lerpPath(
+            pair.first,
+            pair.last,
+            progress,
+            1,
+            controller,
+            paintingStyle: PaintingStyle.fill,
+          )!;
+          var differences = 0;
+          for (var horizontal = 35.37; horizontal < 205; horizontal += 5) {
+            for (var vertical = 35.19; vertical < 205; vertical += 5) {
+              final point = Offset(horizontal, vertical);
+              if (actual.contains(point) != expected.contains(point)) differences++;
+            }
+          }
+          expect(differences, lessThan(10), reason: '$method at $progress');
+          if (identical(expected, heart)) expect(actual.contains(center), isFalse);
+        }
+      }
+      for (final progress in [0.8, 0.9, 0.95, 0.99]) {
+        final actual = PathUtil.lerpPath(
+          menu,
+          heart,
+          progress,
+          1,
+          controller,
+          paintingStyle: PaintingStyle.fill,
+        )!;
+        expect(actual.contains(center), isFalse, reason: '$method at $progress');
+        final reverse = PathUtil.lerpPath(
+          heart,
+          menu,
+          1 - progress,
+          1,
+          controller,
+          paintingStyle: PaintingStyle.fill,
+        )!;
+        expect(reverse.contains(center), isFalse, reason: '$method reverse at ${1 - progress}');
+      }
+    }
+  });
+
+  test('menu morphs converge to other outlined icons in both directions', () async {
+    final menu = await iconChoices[2].toPath();
+    for (final choice in iconChoices.skip(6)) {
+      final icon = await choice.toPath();
+      for (final method in CombineMethod.values) {
+        final controller = PathCombineController()..combineMethod = method;
+        for (final pair in [
+          [menu, icon],
+          [icon, menu],
+        ]) {
+          for (final progress in [0.0001, 0.9999]) {
+            final expected = progress < 0.5 ? pair.first : pair.last;
+            final actual = PathUtil.lerpPath(
+              pair.first,
+              pair.last,
+              progress,
+              1,
+              controller,
+              paintingStyle: PaintingStyle.fill,
+            )!;
+            var differences = 0;
+            for (var horizontal = 35.37; horizontal < 205; horizontal += 5) {
+              for (var vertical = 35.19; vertical < 205; vertical += 5) {
+                final point = Offset(horizontal, vertical);
+                if (actual.contains(point) != expected.contains(point)) differences++;
+              }
+            }
+            expect(differences, lessThan(10), reason: '${choice.label} $method at $progress');
+          }
+        }
+      }
+    }
   });
 
   testWidgets('all examples switch and animate both directions', (tester) async {

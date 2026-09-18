@@ -46,8 +46,105 @@ void main() {
     expect(painter.paintingStyle, PaintingStyle.fill);
   });
 
+  testWidgets('changing painting style updates contour alignment during animation', (tester) async {
+    final start = Path()
+      ..addRect(const Rect.fromLTWH(0, 0, 20, 10))
+      ..addRect(const Rect.fromLTWH(0, 40, 20, 10))
+      ..addRect(const Rect.fromLTWH(0, 80, 20, 10));
+    final end = Path()
+      ..addRect(const Rect.fromLTWH(100, 10, 20, 10))
+      ..addRect(const Rect.fromLTWH(100, 70, 20, 10));
+    Future<void> pump(Path path, PaintingStyle style) => tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: PathCombiner(
+              path: path,
+              color: const Color(0xFF000000),
+              duration: const Duration(seconds: 1),
+              paintingStyle: style,
+            ),
+          ),
+        );
+    int contourCount() {
+      final dynamic painter = tester.widget<CustomPaint>(find.byType(CustomPaint)).painter;
+      return (painter.path as Path).computeMetrics().length;
+    }
+
+    await pump(start, PaintingStyle.stroke);
+    await pump(end, PaintingStyle.stroke);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(contourCount(), 3);
+    await pump(end, PaintingStyle.fill);
+    expect(contourCount(), 6);
+    await pump(end, PaintingStyle.stroke);
+    expect(contourCount(), 3);
+    await pump(end, PaintingStyle.fill);
+    await tester.pumpAndSettle();
+    expect(contourCount(), 2);
+  });
+
   for (final method in CombineMethod.values) {
     final controller = PathCombineController()..combineMethod = method;
+
+    test('$method balances repeated contours without collapsing them', () {
+      final ring = Path()
+        ..addRect(const Rect.fromLTWH(0, 0, 100, 100))
+        ..addPolygon(
+          const [Offset(20, 20), Offset(20, 80), Offset(80, 80), Offset(80, 20)],
+          true,
+        );
+      final extra = Path()
+        ..addRect(const Rect.fromLTWH(0, 0, 100, 100))
+        ..addRect(const Rect.fromLTWH(120, 0, 20, 20))
+        ..addPolygon(
+          const [Offset(20, 20), Offset(20, 80), Offset(80, 80), Offset(80, 20)],
+          true,
+        );
+      for (final progress in [0.0001, 0.9999]) {
+        for (final pair in [
+          [extra, ring],
+          [ring, extra],
+        ]) {
+          final result = PathUtil.lerpPath(
+            pair.first,
+            pair.last,
+            progress,
+            1,
+            controller,
+            paintingStyle: PaintingStyle.fill,
+          )!;
+          expect(result.computeMetrics(), hasLength(6));
+          expect(result.computeMetrics().every((metric) => metric.length > 70), isTrue);
+          expect(result.contains(const Offset(50, 50)), isFalse);
+          expect(result.contains(const Offset(10, 50)), isTrue);
+        }
+      }
+    });
+
+    test('$method retains full-contour splitting and original stroke correspondence', () {
+      final start = Path()
+        ..addRect(const Rect.fromLTWH(0, 0, 20, 10))
+        ..addRect(const Rect.fromLTWH(0, 40, 20, 10))
+        ..addRect(const Rect.fromLTWH(0, 80, 20, 10));
+      final end = Path()
+        ..addRect(const Rect.fromLTWH(100, 10, 20, 10))
+        ..addRect(const Rect.fromLTWH(100, 70, 20, 10));
+      for (final style in PaintingStyle.values) {
+        final result = PathUtil.lerpPath(start, end, 0.5, 1, controller, paintingStyle: style)!;
+        final metrics = result.computeMetrics().toList();
+        final tops = style == PaintingStyle.fill ? [5, 5, 25, 55, 75, 75] : [5, 55, 75];
+        expect(metrics, hasLength(tops.length));
+        for (var index = 0; index < metrics.length; index++) {
+          final metric = metrics[index];
+          expect(metric.isClosed, isTrue);
+          expect(metric.length, closeTo(60, 0.001));
+          expect(
+            metric.extractPath(0, metric.length).getBounds(),
+            Rect.fromLTWH(50, tops[index].toDouble(), 20, 10),
+          );
+        }
+      }
+    });
 
     test('$method preserves closed contours throughout interpolation', () {
       final start = Path()..addRect(const Rect.fromLTWH(0, 0, 20, 20));

@@ -19,10 +19,12 @@ class PathTween extends Tween<Path?> {
     super.begin,
     required this.precision,
     required this.controller,
+    this.paintingStyle = PaintingStyle.stroke,
   });
 
   final double precision;
   final PathCombineController controller;
+  PaintingStyle paintingStyle;
 
   @override
   Path? lerp(double t) => PathUtil.lerpPath(
@@ -31,6 +33,7 @@ class PathTween extends Tween<Path?> {
         t,
         precision,
         controller,
+        paintingStyle: paintingStyle,
       );
 }
 
@@ -41,8 +44,9 @@ class PathUtil {
     Path? end,
     double t,
     double precision,
-    PathCombineController controller,
-  ) {
+    PathCombineController controller, {
+    PaintingStyle paintingStyle = PaintingStyle.stroke,
+  }) {
     if (identical(begin, end)) {
       return begin;
     }
@@ -59,7 +63,7 @@ class PathUtil {
       return end;
     }
 
-    Path result = Path();
+    Path result = Path()..fillType = t < 0.5 ? begin.fillType : end.fillType;
 
     List<ui.PathMetric> beginMetrics =
         begin.computeMetrics().where((metric) => metric.length > 0).toList();
@@ -71,7 +75,16 @@ class PathUtil {
     }
 
     if (beginMetrics.length != endMetrics.length) {
-      combineList(beginMetrics, endMetrics, CombineMethod.space);
+      if (paintingStyle == PaintingStyle.fill &&
+          begin.fillType == PathFillType.nonZero &&
+          end.fillType == PathFillType.nonZero) {
+        final commonCount =
+            beginMetrics.length ~/ beginMetrics.length.gcd(endMetrics.length) * endMetrics.length;
+        beginMetrics = _repeatContours(beginMetrics, commonCount);
+        endMetrics = _repeatContours(endMetrics, commonCount);
+      } else {
+        combineList(beginMetrics, endMetrics, CombineMethod.space);
+      }
     }
 
     for (int i = 0; i < beginMetrics.length; i++) {
@@ -86,6 +99,11 @@ class PathUtil {
     }
 
     return result;
+  }
+
+  static List<ui.PathMetric> _repeatContours(List<ui.PathMetric> metrics, int count) {
+    final repetitions = count ~/ metrics.length;
+    return List.generate(count, (index) => metrics[index ~/ repetitions]);
   }
 
   static void computeMetric({

@@ -27,6 +27,17 @@ PathCombiner(
 
 Check [example](https://github.com/Dabbit-Chan/path_combiner/tree/main/example) for more.
 
+With `PaintingStyle.fill` and two `PathFillType.nonZero` paths, unequal contour
+counts are expanded to their least common multiple. Every contour on each side
+is repeated equally, preserving the balance between outer boundaries and holes
+while retaining one-to-many splitting and merging. Stroke mode keeps the original
+contour alignment; all four sample-padding methods are unchanged. This is not a
+topology-aware morph: intermediate contours may still overlap or self-intersect.
+Balanced repetition does not apply to `evenOdd` or mixed fill rules.
+For coprime contour counts the common count is their product, so complex paths
+can require substantially more interpolation work than stroke mode. Matching
+remains positional, not a semantic matching of glyphs or holes.
+
 ## Convert text to Path
 
 Text conversion uses the built-in font parser, with no glyph_path dependency:
