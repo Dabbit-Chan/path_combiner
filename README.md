@@ -1,153 +1,175 @@
 # Path Combiner
 
-A Flutter package for the animation of the combination of two paths
+**Animate between Flutter shapes, icons, and text.**
 
-## Showcase
+English · [简体中文](README.zh-CN.md)
 
-<img src="https://raw.githubusercontent.com/Dabbit-Chan/path_combiner/main/gifs/example.gif" width=60%>
+**[Try the online demo →](https://dabbit-chan.github.io/path_combiner/)**
 
+Pass a `Path` to `PathCombiner`, then change it to animate to the next shape.
 
-## Getting started
+## Install
 
-`import 'package:path_combiner/path_combiner.dart';`
-
-## Usage
-
-First you need to create two paths that need to convert and a boolean to control them.
-
-Here is a minimalist example.
+```sh
+flutter pub add path_combiner
+```
 
 ```dart
-PathCombiner(
-  duration: const Duration(seconds: 1),
-  path: showStar ? starPath : circlePath,
-  color: Theme.of(context).colorScheme.onPrimaryContainer,
+import 'package:flutter/material.dart';
+import 'package:path_combiner/path_combiner.dart';
+```
+
+## Basic usage
+
+Create two paths and a toggle in your widget's `State`:
+
+```dart
+final circle = Path()..addOval(const Rect.fromLTWH(20, 20, 160, 160));
+final square = Path()..addRect(const Rect.fromLTWH(20, 20, 160, 160));
+bool showSquare = false;
+```
+
+Use this in `build()`. Tap the shape to switch:
+
+```dart
+GestureDetector(
+  onTap: () => setState(() => showSquare = !showSquare),
+  child: SizedBox.square(
+    dimension: 200,
+    child: PathCombiner(
+      path: showSquare ? square : circle,
+      color: Colors.indigo,
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeInOut,
+      paintingStyle: PaintingStyle.fill,
+    ),
+  ),
 )
 ```
 
-Check [example](https://github.com/Dabbit-Chan/path_combiner/tree/main/example) for more.
+Use `PaintingStyle.stroke` and `strokeWidth` for an outlined shape.
+Give the widget a size that fits your paths; it does not automatically scale or
+center them. Switch to another `Path` instance instead of modifying the current one.
 
-With `PaintingStyle.fill` and two `PathFillType.nonZero` paths, unequal contour
-counts are expanded to their least common multiple. Every contour on each side
-is repeated equally, preserving the balance between outer boundaries and holes
-while retaining one-to-many splitting and merging. Stroke mode keeps the original
-contour alignment; all four sample-padding methods are unchanged. This is not a
-topology-aware morph: intermediate contours may still overlap or self-intersect.
-Balanced repetition does not apply to `evenOdd` or mixed fill rules.
-For coprime contour counts the common count is their product, so complex paths
-can require substantially more interpolation work than stroke mode. Matching
-remains positional, not a semantic matching of glyphs or holes.
+## PathCombiner options
 
-## Convert text to Path
+| Field | Default | How to use it |
+| --- | --- | --- |
+| `path` | Required | Pass the target `Path`; switch paths with `setState()` to animate. |
+| `color` | Required | Set the fill or stroke color, such as `Colors.indigo`. |
+| `duration` | Required | Set the transition time, such as `Duration(milliseconds: 700)`. |
+| `curve` | `Curves.linear` | Set the animation curve, such as `Curves.easeInOut`. |
+| `paintingStyle` | `PaintingStyle.stroke` | Use `PaintingStyle.fill` for solid shapes or `PaintingStyle.stroke` for outlines. |
+| `strokeWidth` | `5` | Set the outline width in logical pixels; used in stroke mode. |
+| `strokeCap` | `StrokeCap.round` | Set open line endings: `butt`, `round`, or `square`. |
+| `strokeJoin` | `StrokeJoin.round` | Set stroke corners: `miter`, `round`, or `bevel`. |
+| `combineMethod` | `CombineMethod.space` | Choose a transition style from the options below. |
+| `precision` | `1` | Set a finite positive sampling interval. Smaller values give finer detail but cost more; start with `1`. |
+| `controller` | `null` | Optionally pass a `PathCombineController()` stored in your `State`. Usually omit it and set `combineMethod` directly; this is not an `AnimationController` for playback. |
+| `onEnd` | `null` | Run a callback when the animation finishes, such as `() => debugPrint('Done')`. |
+| `key` | `null` | Optional Flutter widget key. Keep it stable to preserve the current animation state. |
 
-Text conversion uses the built-in font parser, with no glyph_path dependency:
+`combineMethod` controls where extra points are added when paths have different
+sample counts. Try the options in the demo to choose the effect you prefer:
+
+| Value | Behavior |
+| --- | --- |
+| `CombineMethod.start` | Repeat points at the start. |
+| `CombineMethod.end` | Repeat points at the end. |
+| `CombineMethod.center` | Repeat points around the middle. |
+| `CombineMethod.space` | Distribute repeated points evenly; the default. |
+
+## Animate icons
+
+Enable Material Icons in your app's `pubspec.yaml`:
+
+```yaml
+flutter:
+  uses-material-design: true
+```
+
+Convert icons in an asynchronous initialization flow and save the results:
 
 ```dart
-final first = await 'Hello'.toPath(
+WidgetsFlutterBinding.ensureInitialized();
+final homePath = await Icons.home.toPath(size: 200);
+final favoritePath = await Icons.favorite.toPath(size: 200);
+```
+
+Pass either result to `PathCombiner.path`, just like the shapes above.
+Do not start conversions inside `build()`.
+
+For a custom icon font, specify its asset:
+
+```dart
+const icon = IconData(0xe800, fontFamily: 'MyIcons');
+final iconPath = await icon.toPath(
+  size: 200,
+  fontAsset: 'assets/fonts/my_icons.ttf',
+);
+```
+
+### IconData.toPath() options
+
+| Field | Default | How to use it |
+| --- | --- | --- |
+| `size` | `24` | Fit and center the icon in a square of this size; use a finite positive value. |
+| `offset` | `Offset.zero` | Position the square's top-left corner, such as `Offset(20, 20)`. |
+| `textDirection` | `TextDirection.ltr` | Use `TextDirection.rtl` to mirror icons that enable `matchTextDirection`. |
+| `fontAsset` | `null` | Override font lookup with a declared asset path. Omit it for Material Icons or custom fonts declared under `fonts`. |
+| `fontData` | `null` | Pass font bytes as `ByteData` instead of an asset. Do not also supply `fontAsset`. |
+
+## Animate text
+
+Add a font file to your app and declare it in `pubspec.yaml`:
+
+```yaml
+flutter:
+  assets:
+    - assets/fonts/Roboto-Regular.ttf
+```
+
+Convert your strings in an asynchronous initialization flow, then save the paths
+and switch between them with `PathCombiner`:
+
+```dart
+WidgetsFlutterBinding.ensureInitialized();
+final helloPath = await 'Hello'.toPath(
   fontAsset: 'assets/fonts/Roboto-Regular.ttf',
   fontSize: 80,
 );
-final second = await 'Flutter'.toPath(
+final flutterPath = await 'Flutter'.toPath(
   fontAsset: 'assets/fonts/Roboto-Regular.ttf',
   fontSize: 80,
   letterSpacing: 2,
 );
 ```
 
-Import `package:path_combiner/path_combiner.dart` and initialize Flutter's binding
-before loading assets. Declare your font under `flutter: assets:` in your app's
-pubspec, or pass `fontData: ByteData` instead. Exactly one font source is required;
-the converter cannot extract the bytes of an arbitrary system/TextStyle font.
-Package font assets use their full `packages/package_name/...` asset key.
+### String.toPath() options
 
-- `fontSize` defaults to 48 and scales the font's em square. Characters keep
-  their individual advance widths; they are not separately stretched to fit.
-- `letterSpacing` defaults to 0, in logical pixels between code points.
-- `lineHeight` defaults to 1.2; the baseline spacing is `fontSize * lineHeight`.
-- `offset` defaults to zero and specifies the layout origin; the first baseline
-  uses the font's ascender. Visible ink may extend beyond the layout origin.
-- Spaces preserve their advance width, tabs expand to four spaces, and
-  CRLF/CR normalize to LF. An empty/blank string produces an empty path.
-- Fonts loaded from assets are cached. Use `TextPathConverter(bundle: bundle)`
-  for custom bundles and `clearCache()` to release its font cache.
+| Field | Default | How to use it |
+| --- | --- | --- |
+| `fontAsset` | `null` | Set the font asset path declared in `pubspec.yaml`. |
+| `fontData` | `null` | Supply font bytes as `ByteData` instead. Provide exactly one of `fontAsset` or `fontData`. |
+| `fontSize` | `48` | Set the text size, such as `80`; use a finite positive value. |
+| `letterSpacing` | `0` | Set spacing between characters in logical pixels, such as `2`. |
+| `lineHeight` | `1.2` | Set line spacing as a multiplier of `fontSize`; use a finite positive value. |
+| `offset` | `Offset.zero` | Move the text's layout origin, such as `Offset(20, 20)`; this is not the first baseline. |
 
-This is **basic left-to-right code-point layout**, not a replacement for
-Flutter's text shaping engine: no kerning, ligatures, combining-mark positioning,
-Arabic/Indic shaping, bidi reordering, automatic line wrapping or font fallback.
-Chinese characters work when the supplied supported static font contains them;
-the bundled example Roboto does not contain Chinese. Missing glyphs throw a
-`StateError` identifying their Unicode code point, rather than substituting boxes.
-The same static TrueType/CFF format limitations as icon conversion apply.
+Use a supported static font containing all your characters. For Chinese, provide
+a font with Chinese glyphs; the example's Roboto does not include them. Basic
+text layout is supported, but complex-script shaping and automatic font fallback
+are not.
 
-Pass the generated paths to `PathCombiner`. When either path has no contours,
-the widget switches directly at the animation midpoint instead of trying to
-interpolate an empty contour list. Non-empty text uses the existing contour
-animation; it does not perform semantic letter-to-letter matching.
+## Try more examples
 
-The example's top-right **Text → Path** button opens two editable String inputs.
-Generate the paths, then toggle between them. The preview fits both strings
-using one shared scale and centers their visible outlines.
+Explore the **[online demo](https://dabbit-chan.github.io/path_combiner/)**,
+including **Text → Path**, or browse the [example app](example).
 
-## Convert IconData to Path
+To run it locally from the repository root:
 
-Import the library to use the asynchronous `IconData.toPath()` extension:
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:path_combiner/path_combiner.dart';
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final homePath = await Icons.home.toPath(size: 200);
-  final favoritePath = await Icons.favorite.toPath(size: 200);
-  // Store the paths in your widget state, then pass the selected path
-  // to PathCombiner. Avoid starting conversions inside build().
-  runApp(MyApp(homePath: homePath, favoritePath: favoritePath));
-}
+```sh
+cd example
+flutter pub get
+flutter run -d chrome
 ```
-
-`MyApp` above represents your own application widget. Material Icons require
-`flutter: uses-material-design: true` in the application's `pubspec.yaml`.
-
-- `size` (default `24`): proportionally fits and centers the visible outline in
-  a square. This uses outline bounds, not the font's advance width or native
-  `Icon` padding; the result is not a pixel-identical layout of an `Icon` widget.
-- `offset` (default `Offset.zero`): the top-left of that square.
-- `textDirection` (default `TextDirection.ltr`): mirrors icons marked with
-  `matchTextDirection` when set to `TextDirection.rtl`.
-- `fontAsset`: overrides automatic font lookup with an asset key.
-- `fontData`: supplies raw `ByteData` instead, useful for fonts loaded using
-  `FontLoader`. Do not pass both `fontAsset` and `fontData`.
-
-Custom fonts declared in `pubspec.yaml` are resolved through `FontManifest.json`
-using `IconData.fontFamily` and `fontPackage`:
-
-```dart
-const icon = IconData(0xe800, fontFamily: 'MyIcons');
-final path = await icon.toPath(size: 120);
-
-// Alternatively, select the font asset explicitly.
-final explicitPath = await icon.toPath(
-  size: 120,
-  fontAsset: 'assets/fonts/my_icons.ttf',
-);
-
-// For a custom AssetBundle or explicit cache lifetime:
-final converter = IconPathConverter(bundle: myAssetBundle);
-final bundledPath = await converter.convert(icon, size: 120);
-converter.clearCache();
-```
-
-The converter extracts actual vector outlines, including quadratic/cubic curves,
-multiple contours, holes, and compound glyphs; it does not trace a bitmap.
-Static TrueType `glyf` and non-CID OpenType CFF Type 2 fonts are supported,
-with Unicode cmap formats 4 and 12. This includes Flutter's CFF Material Icons.
-CFF2, CID-keyed CFF, CFF seac composites/arithmetic operators, variable fonts,
-bitmap-only fonts and color-layer rendering are not supported. Missing fonts or
-characters throw an error; blank glyphs produce an empty path. Font assets are
-cached by each converter, and every call returns an independent `Path`.
-
-The converter only sees the font bytes shipped in your app. Keep icon code
-points statically declared as `const IconData`/`Icons.*` for release font
-tree-shaking. If icons are selected dynamically and Flutter cannot determine
-which glyphs to keep, build with `--no-tree-shake-icons`.
