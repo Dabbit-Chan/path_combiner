@@ -2,12 +2,7 @@ name: Deploy Example to GitHub Pages
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "lib/**"
-      - "third_party/glyph_path/**"
-      - "example/**"
-      - ".github/workflows/deploy_web.yml"
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
