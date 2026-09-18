@@ -22,11 +22,12 @@ class StudioPanel extends StatelessWidget {
 }
 
 class StudioHeading extends StatelessWidget {
-  const StudioHeading(
-      {super.key,
-      required this.eyebrow,
-      required this.title,
-      required this.description});
+  const StudioHeading({
+    super.key,
+    required this.eyebrow,
+    required this.title,
+    required this.description,
+  });
   final String eyebrow;
   final String title;
   final String description;
@@ -35,22 +36,27 @@ class StudioHeading extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(eyebrow,
-              style: const TextStyle(
-                  color: studioGreen,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
-                  letterSpacing: 2)),
+          Text(
+            eyebrow,
+            style: const TextStyle(
+              color: studioGreen,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              letterSpacing: 2,
+            ),
+          ),
           const SizedBox(height: 12),
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w800,
-                  color: studioInk,
-                  letterSpacing: -1.5)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.w800,
+              color: studioInk,
+              letterSpacing: -1.5,
+            ),
+          ),
           const SizedBox(height: 10),
-          Text(description,
-              style: const TextStyle(color: Color(0xFF697A73), height: 1.6)),
+          Text(description, style: const TextStyle(color: Color(0xFF697A73), height: 1.6)),
         ],
       );
 }
@@ -66,17 +72,18 @@ class PreviewStage extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF213F38), Color(0xFF102722)]),
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF213F38), Color(0xFF102722)],
+          ),
         ),
         child: CustomPaint(
-            painter: const _GridPainter(),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: DefaultTextStyle.merge(
-                  style: const TextStyle(color: studioMint), child: child),
-            )),
+          painter: const _GridPainter(),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: DefaultTextStyle.merge(style: const TextStyle(color: studioMint), child: child),
+          ),
+        ),
       );
 }
 
@@ -100,12 +107,13 @@ class _GridPainter extends CustomPainter {
 }
 
 class MotionControls extends StatelessWidget {
-  const MotionControls(
-      {super.key,
-      required this.duration,
-      required this.method,
-      required this.onDurationChanged,
-      required this.onMethodChanged});
+  const MotionControls({
+    super.key,
+    required this.duration,
+    required this.method,
+    required this.onDurationChanged,
+    required this.onMethodChanged,
+  });
   final double duration;
   final CombineMethod method;
   final ValueChanged<double> onDurationChanged;
@@ -115,40 +123,44 @@ class MotionControls extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('动画设置',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          const Text('动画设置', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 20),
-          Text('DURATION  /  ${duration.round()} ms',
-              style: const TextStyle(fontSize: 12, letterSpacing: 1)),
+          Text(
+            'DURATION  /  ${duration.round()} ms',
+            style: const TextStyle(fontSize: 12, letterSpacing: 1),
+          ),
           Slider(
-              key: const ValueKey('duration-slider'),
-              value: duration,
-              min: 200,
-              max: 2000,
-              divisions: 9,
-              label: '${duration.round()} ms',
-              onChanged: onDurationChanged),
+            key: const ValueKey('duration-slider'),
+            value: duration,
+            min: 200,
+            max: 2000,
+            divisions: 9,
+            label: '${duration.round()} ms',
+            onChanged: onDurationChanged,
+          ),
           const SizedBox(height: 12),
           InputDecorator(
             decoration: const InputDecoration(labelText: '采样点补齐方式'),
             child: DropdownButtonHideUnderline(
-                child: DropdownButton<CombineMethod>(
-              key: const ValueKey('combine-method'),
-              value: method,
-              isExpanded: true,
-              items: [
-                for (final option in CombineMethod.values)
-                  DropdownMenuItem(value: option, child: Text(option.name))
-              ],
-              onChanged: (value) {
-                if (value != null) onMethodChanged(value);
-              },
-            )),
+              child: DropdownButton<CombineMethod>(
+                key: const ValueKey('combine-method'),
+                value: method,
+                isExpanded: true,
+                items: [
+                  for (final option in CombineMethod.values)
+                    DropdownMenuItem(value: option, child: Text(option.name)),
+                ],
+                onChanged: (value) {
+                  if (value != null) onMethodChanged(value);
+                },
+              ),
+            ),
           ),
           const SizedBox(height: 16),
-          const Text('相同的 Path，不同的运动方式。\n调整参数，再次切换即可体验。',
-              style: TextStyle(
-                  fontSize: 12, color: Color(0xFF697A73), height: 1.7)),
+          const Text(
+            '相同的 Path，不同的运动方式。\n调整参数，再次切换即可体验。',
+            style: TextStyle(fontSize: 12, color: Color(0xFF697A73), height: 1.7),
+          ),
         ],
       );
 }
@@ -159,25 +171,25 @@ class CodePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => StudioPanel(
-          child: ExpansionTile(
-        tilePadding: EdgeInsets.zero,
-        title:
-            const Text('查看实现代码', style: TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: const Text('UNDER THE HOOD',
-            style: TextStyle(fontSize: 10, letterSpacing: 2)),
-        children: [
-          Align(
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          title: const Text('查看实现代码', style: TextStyle(fontWeight: FontWeight.w600)),
+          subtitle: const Text('UNDER THE HOOD', style: TextStyle(fontSize: 10, letterSpacing: 2)),
+          children: [
+            Align(
               alignment: Alignment.centerLeft,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: SelectableText(code,
-                        style: const TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 12,
-                            height: 1.8))),
-              ))
-        ],
-      ));
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: SelectableText(
+                    code,
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12, height: 1.8),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
 }

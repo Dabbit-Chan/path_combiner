@@ -57,11 +57,13 @@ class _TextPathExampleState extends State<TextPathExample> {
     try {
       final paths = <Path>[];
       for (final text in labels) {
-        paths.add(await _converter.convert(
-          text,
-          fontAsset: 'assets/fonts/Roboto-Regular.ttf',
-          fontSize: 80,
-        ));
+        paths.add(
+          await _converter.convert(
+            text,
+            fontAsset: 'assets/fonts/Roboto-Regular.ttf',
+            fontSize: 80,
+          ),
+        );
       }
       var width = 0.0;
       var height = 0.0;
@@ -72,18 +74,19 @@ class _TextPathExampleState extends State<TextPathExample> {
       }
       final scale = math.min(
         1.0,
-        math.min(
-            width == 0 ? 1.0 : 560 / width, height == 0 ? 1.0 : 200 / height),
+        math.min(width == 0 ? 1.0 : 560 / width, height == 0 ? 1.0 : 200 / height),
       );
       final fitted = paths.map((path) {
         final center = path.getBounds().center;
-        return path.transform(Float64List(16)
-          ..[0] = scale
-          ..[5] = scale
-          ..[10] = 1
-          ..[12] = _canvasSize.width / 2 - center.dx * scale
-          ..[13] = _canvasSize.height / 2 - center.dy * scale
-          ..[15] = 1);
+        return path.transform(
+          Float64List(16)
+            ..[0] = scale
+            ..[5] = scale
+            ..[10] = 1
+            ..[12] = _canvasSize.width / 2 - center.dx * scale
+            ..[13] = _canvasSize.height / 2 - center.dy * scale
+            ..[15] = 1,
+        );
       }).toList();
       if (!mounted || request != _request) return;
       setState(() {
@@ -116,125 +119,144 @@ class _TextPathExampleState extends State<TextPathExample> {
         ),
         const SizedBox(height: 28),
         StudioPanel(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-              const Text('写下你的起点与终点',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('写下你的起点与终点', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 20),
-              LayoutBuilder(builder: (context, constraints) {
-                final start = _input(_first, 'text-start', 'START / 起始文字');
-                final end = _input(_second, 'text-end', 'END / 目标文字');
-                if (constraints.maxWidth < 560) {
-                  return Column(
-                      children: [start, const SizedBox(height: 12), end]);
-                }
-                return Row(
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final start = _input(_first, 'text-start', 'START / 起始文字');
+                  final end = _input(_second, 'text-end', 'END / 目标文字');
+                  if (constraints.maxWidth < 560) {
+                    return Column(children: [start, const SizedBox(height: 12), end]);
+                  }
+                  return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(child: start),
                       const SizedBox(width: 20),
                       Expanded(child: end),
-                    ]);
-              }),
+                    ],
+                  );
+                },
+              ),
               const SizedBox(height: 12),
               Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    FilledButton.icon(
-                        key: const ValueKey('generate-text'),
-                        onPressed: _loading ? null : _generate,
-                        icon: const Icon(Icons.auto_fix_high_rounded),
-                        label: Text(_loading ? '正在生成…' : '生成文字轮廓')),
-                    Text(_dirty ? '文字已修改，点击生成更新预览' : '支持英文、数字、符号与换行',
-                        style: const TextStyle(
-                            color: Color(0xFF697A73), fontSize: 12)),
-                  ]),
+                spacing: 12,
+                runSpacing: 12,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  FilledButton.icon(
+                    key: const ValueKey('generate-text'),
+                    onPressed: _loading ? null : _generate,
+                    icon: const Icon(Icons.auto_fix_high_rounded),
+                    label: Text(_loading ? '正在生成…' : '生成文字轮廓'),
+                  ),
+                  Text(
+                    _dirty ? '文字已修改，点击生成更新预览' : '支持英文、数字、符号与换行',
+                    style: const TextStyle(color: Color(0xFF697A73), fontSize: 12),
+                  ),
+                ],
+              ),
               if (_loading)
-                const Padding(
-                    padding: EdgeInsets.only(top: 16),
-                    child: LinearProgressIndicator()),
+                const Padding(padding: EdgeInsets.only(top: 16), child: LinearProgressIndicator()),
               if (_error != null)
                 Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Text(_error!,
-                        key: const ValueKey('text-error'),
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.error))),
-            ])),
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text(
+                    _error!,
+                    key: const ValueKey('text-error'),
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                ),
+            ],
+          ),
+        ),
         const SizedBox(height: 20),
         if (_paths != null) ...[
           PreviewStage(
-              child: Column(children: [
-            const Align(
-                alignment: Alignment.centerLeft,
-                child: Text('LIVE TYPOGRAPHY',
-                    style: TextStyle(fontSize: 11, letterSpacing: 2))),
-            const SizedBox(height: 20),
-            Text(
-                _labels[selected].trim().isEmpty ? '（空白文本）' : _labels[selected],
-                key: const ValueKey('text-current'),
-                textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            Semantics(
-                label: '文字轮廓动画预览',
-                child: AspectRatio(
-                  aspectRatio: _canvasSize.aspectRatio,
-                  child: FittedBox(
+            child: Column(
+              children: [
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('LIVE TYPOGRAPHY', style: TextStyle(fontSize: 11, letterSpacing: 2)),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  _labels[selected].trim().isEmpty ? '（空白文本）' : _labels[selected],
+                  key: const ValueKey('text-current'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Semantics(
+                  label: '文字轮廓动画预览',
+                  child: AspectRatio(
+                    aspectRatio: _canvasSize.aspectRatio,
+                    child: FittedBox(
                       child: SizedBox.fromSize(
-                          size: _canvasSize,
-                          child: PathCombiner(
-                            key: ValueKey('text-preview-$_revision'),
-                            path: _paths![selected],
-                            color: studioMint,
-                            strokeWidth: 1.5,
-                            precision: 1.5,
-                            duration: Duration(milliseconds: _duration.round()),
-                            combineMethod: _method,
-                            curve: Curves.easeInOutCubic,
-                          ))),
-                )),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-                key: const ValueKey('toggle-text'),
-                style: FilledButton.styleFrom(
-                    backgroundColor: studioMint, foregroundColor: studioInk),
-                onPressed: _loading
-                    ? null
-                    : () => setState(() => _showSecond = !_showSecond),
-                icon: const Icon(Icons.swap_horiz_rounded),
-                label: const Text('切换文字')),
-            const SizedBox(height: 16),
-            const Text('STRING  →  PATH  →  MOTION',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 10, letterSpacing: 2, color: Color(0xFF93B6A7))),
-          ])),
+                        size: _canvasSize,
+                        child: PathCombiner(
+                          key: ValueKey('text-preview-$_revision'),
+                          path: _paths![selected],
+                          color: studioMint,
+                          strokeWidth: 1.5,
+                          precision: 1.5,
+                          duration: Duration(milliseconds: _duration.round()),
+                          combineMethod: _method,
+                          curve: Curves.easeInOutCubic,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  key: const ValueKey('toggle-text'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: studioMint,
+                    foregroundColor: studioInk,
+                  ),
+                  onPressed: _loading ? null : () => setState(() => _showSecond = !_showSecond),
+                  icon: const Icon(Icons.swap_horiz_rounded),
+                  label: const Text('切换文字'),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'STRING  →  PATH  →  MOTION',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 10, letterSpacing: 2, color: Color(0xFF93B6A7)),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 20),
           StudioPanel(
-              child: MotionControls(
-                  duration: _duration,
-                  method: _method,
-                  onDurationChanged: (value) =>
-                      setState(() => _duration = value),
-                  onMethodChanged: (value) => setState(() => _method = value))),
+            child: MotionControls(
+              duration: _duration,
+              method: _method,
+              onDurationChanged: (value) => setState(() => _duration = value),
+              onMethodChanged: (value) => setState(() => _method = value),
+            ),
+          ),
         ],
         const SizedBox(height: 20),
         const StudioPanel(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('关于字体与排版', style: TextStyle(fontWeight: FontWeight.w700)),
-          SizedBox(height: 10),
-          Text(
-              '内置 Roboto，支持英文、数字及常见符号，不含中文字形。'
-              '中文需换用包含中文的静态 TTF / OTF 字体。\n'
-              '两段文本按真实字宽排版、统一缩放并居中；支持换行，不提供复杂文字塑形、双向排版或 emoji 合成。'
-              '空白文本没有轮廓，与非空文本在动画中点直接切换。',
-              style: TextStyle(
-                  fontSize: 12, height: 1.8, color: Color(0xFF697A73))),
-        ])),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('关于字体与排版', style: TextStyle(fontWeight: FontWeight.w700)),
+              SizedBox(height: 10),
+              Text(
+                '内置 Roboto，支持英文、数字及常见符号，不含中文字形。'
+                '中文需换用包含中文的静态 TTF / OTF 字体。\n'
+                '两段文本按真实字宽排版、统一缩放并居中；支持换行，不提供复杂文字塑形、双向排版或 emoji 合成。'
+                '空白文本没有轮廓，与非空文本在动画中点直接切换。',
+                style: TextStyle(fontSize: 12, height: 1.8, color: Color(0xFF697A73)),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: 20),
         CodePanel(code: _code),
       ],
@@ -243,25 +265,27 @@ class _TextPathExampleState extends State<TextPathExample> {
     return Scaffold(
       appBar: AppBar(title: const Text('Text / Studio')),
       body: SafeArea(
-          child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Center(
-                  child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1120),
-                      child: content)))),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1120),
+              child: content,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _input(TextEditingController controller, String key, String label) =>
-      TextField(
+  Widget _input(TextEditingController controller, String key, String label) => TextField(
         key: ValueKey(key),
         controller: controller,
         minLines: 1,
         maxLines: 3,
         maxLength: 40,
         onChanged: (_) => setState(() => _dirty = true),
-        decoration: InputDecoration(
-            labelText: label, border: const OutlineInputBorder()),
+        decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
       );
 
   String get _code {

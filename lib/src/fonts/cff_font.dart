@@ -70,16 +70,16 @@ class CffFont {
     }
     final interpreter = _Type2(_localSubroutines, _globalSubroutines);
     interpreter.run(_glyphs[glyph]);
-    final path = _matrix == null
-        ? interpreter.path
-        : interpreter.path.transform(_matrix!);
+    final path = _matrix == null ? interpreter.path : interpreter.path.transform(_matrix!);
     if (unitsPerEm == null) return path;
     final scale = _matrix == null ? unitsPerEm / 1000 : unitsPerEm.toDouble();
-    return path.transform(Float64List(16)
-      ..[0] = scale
-      ..[5] = scale
-      ..[10] = 1
-      ..[15] = 1);
+    return path.transform(
+      Float64List(16)
+        ..[0] = scale
+        ..[5] = scale
+        ..[10] = 1
+        ..[15] = 1,
+    );
   }
 }
 
@@ -162,8 +162,7 @@ class _Type2 {
         if (stack.isEmpty) {
           throw const FormatException('Missing subroutine index');
         }
-        final subroutines =
-            operator == 10 ? localSubroutines : globalSubroutines;
+        final subroutines = operator == 10 ? localSubroutines : globalSubroutines;
         final bias = subroutines.length < 1240
             ? 107
             : subroutines.length < 33900
@@ -258,9 +257,11 @@ class _Type2 {
           var initial = index == 1 ? stack[0] : 0.0;
           while (index < stack.length) {
             final values = stack.sublist(index, index + 4);
-            _curve(operator == 26
-                ? [initial, values[0], values[1], values[2], 0, values[3]]
-                : [values[0], initial, values[1], values[2], values[3], 0]);
+            _curve(
+              operator == 26
+                  ? [initial, values[0], values[1], values[2], 0, values[3]]
+                  : [values[0], initial, values[1], values[2], values[3], 0],
+            );
             initial = 0;
             index += 4;
           }
@@ -276,9 +277,11 @@ class _Type2 {
             final values = stack.sublist(index, index + 4);
             index += 4;
             final last = stack.length - index == 1 ? stack[index++] : 0.0;
-            _curve(horizontal
-                ? [values[0], 0, values[1], values[2], last, values[3]]
-                : [0, values[0], values[1], values[2], values[3], last]);
+            _curve(
+              horizontal
+                  ? [values[0], 0, values[1], values[2], last, values[3]]
+                  : [0, values[0], values[1], values[2], values[3], last],
+            );
             horizontal = !horizontal;
           }
           break;
@@ -286,9 +289,7 @@ class _Type2 {
           _flex(reader.byte());
           break;
         case 14:
-          _width(stack.length == 1 || stack.length == 5
-              ? stack.length - 1
-              : stack.length);
+          _width(stack.length == 1 || stack.length == 5 ? stack.length - 1 : stack.length);
           if (stack.isNotEmpty) {
             throw UnsupportedError('CFF seac composites are not supported');
           }
@@ -296,8 +297,7 @@ class _Type2 {
           ended = true;
           break;
         default:
-          throw UnsupportedError(
-              'Unsupported CFF charstring operator $operator');
+          throw UnsupportedError('Unsupported CFF charstring operator $operator');
       }
       stack.clear();
     }
@@ -336,8 +336,7 @@ class _Type2 {
     final control1 = position + Offset(values[0], values[1]);
     final control2 = control1 + Offset(values[2], values[3]);
     position = control2 + Offset(values[4], values[5]);
-    path.cubicTo(control1.dx, control1.dy, control2.dx, control2.dy,
-        position.dx, position.dy);
+    path.cubicTo(control1.dx, control1.dy, control2.dx, control2.dy, position.dx, position.dy);
   }
 
   void _flex(int operator) {
@@ -355,14 +354,7 @@ class _Type2 {
       case 36:
         _count(9);
         _curve([stack[0], stack[1], stack[2], stack[3], stack[4], 0]);
-        _curve([
-          stack[5],
-          0,
-          stack[6],
-          stack[7],
-          stack[8],
-          -stack[1] - stack[3] - stack[7]
-        ]);
+        _curve([stack[5], 0, stack[6], stack[7], stack[8], -stack[1] - stack[3] - stack[7]]);
         break;
       case 37:
         _count(11);
@@ -452,11 +444,12 @@ class _Reader {
     }
     final start = position;
     final result = List.generate(
-        count,
-        (index) => slice(
-              start + offsets[index] - 1,
-              offsets[index + 1] - offsets[index],
-            ));
+      count,
+      (index) => slice(
+        start + offsets[index] - 1,
+        offsets[index + 1] - offsets[index],
+      ),
+    );
     skip(offsets.last - 1);
     return result;
   }

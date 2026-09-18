@@ -134,10 +134,8 @@ class PathUtil {
     );
   }
 
-  static void combineList<T>(
-      List<T> a, List<T> b, CombineMethod combineMethod) {
-    assert(a.length != b.length,
-        'Only handle the case where two lists are not the same length');
+  static void combineList<T>(List<T> a, List<T> b, CombineMethod combineMethod) {
+    assert(a.length != b.length, 'Only handle the case where two lists are not the same length');
 
     late List<T> shortList;
     late List<T> longList;
@@ -163,10 +161,12 @@ class PathUtil {
         }
       case CombineMethod.end:
         {
-          shortList.addAll(List.generate(
-            (longList.length - shortList.length),
-            (_) => shortList.last,
-          ));
+          shortList.addAll(
+            List.generate(
+              (longList.length - shortList.length),
+              (_) => shortList.last,
+            ),
+          );
           break;
         }
       case CombineMethod.center:
@@ -204,8 +204,7 @@ class PathUtil {
             // Map both endpoints exactly and round the normalized position.
             // This distributes the remainder as evenly as integer sampling
             // allows, without front-loading it at the beginning.
-            final sourceIndex =
-                (i * (shortList.length - 1) / (longList.length - 1)).round();
+            final sourceIndex = (i * (shortList.length - 1) / (longList.length - 1)).round();
             return shortList[sourceIndex];
           });
 

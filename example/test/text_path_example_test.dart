@@ -15,15 +15,20 @@ void main() {
 
   testWidgets('opens text example from existing gallery', (tester) async {
     final paths = [Path()..addRect(const Rect.fromLTWH(0, 0, 50, 50)), Path()];
-    await tester.pumpWidget(MyApp(examples: [
-      PathExample(
-          title: 'Test',
-          description: 'Test',
-          startLabel: 'A',
-          endLabel: 'B',
-          loadPaths: () async => paths,
-          code: ''),
-    ]));
+    await tester.pumpWidget(
+      MyApp(
+        examples: [
+          PathExample(
+            title: 'Test',
+            description: 'Test',
+            startLabel: 'A',
+            endLabel: 'B',
+            loadPaths: () async => paths,
+            code: '',
+          ),
+        ],
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('open-text-example')));
     await tester.pumpAndSettle();
@@ -33,8 +38,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('two strings generate separate paths and animate',
-      (tester) async {
+  testWidgets('two strings generate separate paths and animate', (tester) async {
     _largeView(tester);
     await tester.pumpWidget(const MaterialApp(home: TextPathExample()));
     await tester.pumpAndSettle();
@@ -60,8 +64,7 @@ void main() {
     expect(second.getBounds().bottom, lessThanOrEqualTo(220.01));
   });
 
-  testWidgets('blank text and missing glyphs can be recovered from',
-      (tester) async {
+  testWidgets('blank text and missing glyphs can be recovered from', (tester) async {
     _largeView(tester);
     await tester.pumpWidget(const MaterialApp(home: TextPathExample()));
     await tester.pumpAndSettle();

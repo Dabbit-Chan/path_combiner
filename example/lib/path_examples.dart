@@ -13,8 +13,7 @@ class IconChoice {
 
   String get family => icon.fontPackage == null ? 'Material' : 'Cupertino';
 
-  Future<Path> toPath({TextDirection direction = TextDirection.ltr}) =>
-      icon.toPath(
+  Future<Path> toPath({TextDirection direction = TextDirection.ltr}) => icon.toPath(
         size: 180,
         offset: const Offset(30, 30),
         textDirection: direction,

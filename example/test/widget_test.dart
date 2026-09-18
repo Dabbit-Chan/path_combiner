@@ -44,8 +44,10 @@ void main() {
     for (var horizontal = 35.37; horizontal < 205; horizontal += 10) {
       for (var vertical = 35.19; vertical < 205; vertical += 10) {
         final point = Offset(horizontal, vertical);
-        expect(left.contains(point),
-            right.contains(Offset(exampleCanvasSize - horizontal, vertical)));
+        expect(
+          left.contains(point),
+          right.contains(Offset(exampleCanvasSize - horizontal, vertical)),
+        );
         if (left.contains(point) != right.contains(point)) {
           mirroredDifferences++;
         }
@@ -54,8 +56,7 @@ void main() {
     expect(mirroredDifferences, greaterThan(0));
   });
 
-  testWidgets('all examples switch and animate both directions',
-      (tester) async {
+  testWidgets('all examples switch and animate both directions', (tester) async {
     _setView(tester, const Size(900, 1200));
     await tester.pumpWidget(MyApp(examples: readyExamples));
     await tester.pumpAndSettle();
@@ -67,8 +68,10 @@ void main() {
       await tester.tap(chip);
       await tester.pumpAndSettle();
       expect(_label(tester), readyExamples[index].startLabel);
-      expect(tester.widget<PathCombiner>(find.byType(PathCombiner)).path,
-          same(loadedPaths[index][0]));
+      expect(
+        tester.widget<PathCombiner>(find.byType(PathCombiner)).path,
+        same(loadedPaths[index][0]),
+      );
       final toggle = find.byKey(const ValueKey('toggle-path'));
       await tester.ensureVisible(toggle);
       await tester.tap(toggle);
@@ -77,8 +80,10 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.pumpAndSettle();
       expect(_label(tester), readyExamples[index].endLabel);
-      expect(tester.widget<PathCombiner>(find.byType(PathCombiner)).path,
-          same(loadedPaths[index][1]));
+      expect(
+        tester.widget<PathCombiner>(find.byType(PathCombiner)).path,
+        same(loadedPaths[index][1]),
+      );
       await tester.tap(toggle);
       await tester.pumpAndSettle();
       expect(_label(tester), readyExamples[index].startLabel);
@@ -86,8 +91,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('start and end independently select either icon family',
-      (tester) async {
+  testWidgets('start and end independently select either icon family', (tester) async {
     _setView(tester, const Size(1100, 1500));
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
@@ -116,8 +120,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('real icon pickers fit a narrow screen with large text',
-      (tester) async {
+  testWidgets('real icon pickers fit a narrow screen with large text', (tester) async {
     _setView(tester, const Size(320, 780));
     tester.platformDispatcher.textScaleFactorTestValue = 1.5;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
@@ -129,8 +132,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('duration and combine method controls update the animator',
-      (tester) async {
+  testWidgets('duration and combine method controls update the animator', (tester) async {
     _setView(tester, const Size(900, 1200));
     await tester.pumpWidget(MyApp(examples: readyExamples));
     await tester.pumpAndSettle();
@@ -140,20 +142,23 @@ void main() {
     await tester.pumpAndSettle();
     final selectedDuration = tester.widget<Slider>(slider).value.round();
     expect(selectedDuration, isNot(800));
-    expect(tester.widget<PathCombiner>(find.byType(PathCombiner)).duration,
-        Duration(milliseconds: selectedDuration));
+    expect(
+      tester.widget<PathCombiner>(find.byType(PathCombiner)).duration,
+      Duration(milliseconds: selectedDuration),
+    );
     final dropdown = find.byKey(const ValueKey('combine-method'));
     await tester.ensureVisible(dropdown);
     await tester.tap(dropdown);
     await tester.pumpAndSettle();
     await tester.tap(find.text('center').last);
     await tester.pumpAndSettle();
-    expect(tester.widget<PathCombiner>(find.byType(PathCombiner)).combineMethod,
-        CombineMethod.center);
+    expect(
+      tester.widget<PathCombiner>(find.byType(PathCombiner)).combineMethod,
+      CombineMethod.center,
+    );
   });
 
-  testWidgets('paths are loaded once per example, not during rebuilds',
-      (tester) async {
+  testWidgets('paths are loaded once per example, not during rebuilds', (tester) async {
     _setView(tester, const Size(900, 1200));
     final loads = [0, 0];
     final examples = [

@@ -24,18 +24,17 @@ ByteData makeCff({
 
   List<int> integer(int value) => [29, ...(_Writer()..uint32(value)).bytes];
   final names = index([
-    [65]
+    [65],
   ]);
   final strings = index([]);
   final global = index(globalSubroutines);
   final glyphs = index([
     [14],
-    charString
+    charString,
   ]);
   final private = [...integer(6), 19];
   final topLength = index([List.filled(17, 0)]).length;
-  final glyphOffset =
-      4 + names.length + topLength + strings.length + global.length;
+  final glyphOffset = 4 + names.length + topLength + strings.length + global.length;
   final top = index([
     [
       ...integer(glyphOffset),
@@ -45,19 +44,21 @@ ByteData makeCff({
       18,
     ],
   ]);
-  return ByteData.sublistView(Uint8List.fromList([
-    1,
-    0,
-    4,
-    4,
-    ...names,
-    ...top,
-    ...strings,
-    ...global,
-    ...glyphs,
-    ...private,
-    ...index(localSubroutines),
-  ]));
+  return ByteData.sublistView(
+    Uint8List.fromList([
+      1,
+      0,
+      4,
+      4,
+      ...names,
+      ...top,
+      ...strings,
+      ...global,
+      ...glyphs,
+      ...private,
+      ...index(localSubroutines),
+    ]),
+  );
 }
 
 List<int> cffNumbers(List<int> values) => values.expand((value) {
@@ -65,8 +66,11 @@ List<int> cffNumbers(List<int> values) => values.expand((value) {
       return [28, ...(_Writer()..int16(value)).bytes];
     }).toList();
 
-ByteData makeFont(
-    {bool longLocations = true, bool glyphArray = false, int? metricCount}) {
+ByteData makeFont({
+  bool longLocations = true,
+  bool glyphArray = false,
+  int? metricCount,
+}) {
   final triangle = _simple([
     [const Offset(0, 0), const Offset(100, 0), const Offset(0, 100)],
   ]);
@@ -84,20 +88,26 @@ ByteData makeFont(
       const Offset(75, 25),
     ],
   ]);
-  final curve = _simple([
-    [const Offset(0, 0), const Offset(50, 100), const Offset(100, 0)],
-  ], flags: [
-    1,
-    0,
-    1
-  ]);
-  final offCurve = _simple([
-    [const Offset(0, 0), const Offset(100, 0), const Offset(50, 100)],
-  ], flags: [
-    0,
-    0,
-    0
-  ]);
+  final curve = _simple(
+    [
+      [const Offset(0, 0), const Offset(50, 100), const Offset(100, 0)],
+    ],
+    flags: [
+      1,
+      0,
+      1,
+    ],
+  );
+  final offCurve = _simple(
+    [
+      [const Offset(0, 0), const Offset(100, 0), const Offset(50, 100)],
+    ],
+    flags: [
+      0,
+      0,
+      0,
+    ],
+  );
   final compound = _Writer()
     ..int16(-1)
     ..zeros(8)

@@ -38,8 +38,10 @@ void main() {
       final metric = result.computeMetrics().single;
       expect(metric.isClosed, isFalse);
       expect(metric.getTangentForOffset(0)!.position, const Offset(5, 5));
-      expect(metric.getTangentForOffset(metric.length)!.position,
-          const Offset(20, 5));
+      expect(
+        metric.getTangentForOffset(metric.length)!.position,
+        const Offset(20, 5),
+      );
       expect(metric.length, closeTo(15, 0.001));
     });
 
@@ -48,9 +50,7 @@ void main() {
       final end = Path()
         ..moveTo(0, 1)
         ..lineTo(0.4, 1);
-      final metric = PathUtil.lerpPath(start, end, 0.5, 1.5, controller)!
-          .computeMetrics()
-          .single;
+      final metric = PathUtil.lerpPath(start, end, 0.5, 1.5, controller)!.computeMetrics().single;
       expect(metric.length, closeTo(0.3, 0.001));
       expect(metric.isClosed, isFalse);
     });
@@ -60,13 +60,13 @@ void main() {
       final end = Path()
         ..moveTo(0, 0)
         ..lineTo(20, 0);
-      final metric = PathUtil.lerpPath(start, end, 0.5, 3, controller)!
-          .computeMetrics()
-          .single;
+      final metric = PathUtil.lerpPath(start, end, 0.5, 3, controller)!.computeMetrics().single;
       expect(metric.isClosed, isFalse);
       expect(metric.getTangentForOffset(0)!.position, Offset.zero);
-      expect(metric.getTangentForOffset(metric.length)!.position,
-          const Offset(10, 0));
+      expect(
+        metric.getTangentForOffset(metric.length)!.position,
+        const Offset(10, 0),
+      );
     });
 
     test('$method returns exact source paths at animation endpoints', () {
@@ -77,10 +77,10 @@ void main() {
     });
   }
 
-  test('Roboto Hello / Flutter keeps every contour closed in both directions',
-      () async {
+  test('Roboto Hello / Flutter keeps every contour closed in both directions', () async {
     final font = ByteData.sublistView(
-        await File('example/assets/fonts/Roboto-Regular.ttf').readAsBytes());
+      await File('example/assets/fonts/Roboto-Regular.ttf').readAsBytes(),
+    );
     final hello = await 'Hello'.toPath(fontData: font, fontSize: 80);
     final flutter = await 'Flutter'.toPath(fontData: font, fontSize: 80);
     final count = flutter.computeMetrics().length;
@@ -88,16 +88,18 @@ void main() {
       final controller = PathCombineController()..combineMethod = method;
       for (final paths in [
         [hello, flutter],
-        [flutter, hello]
+        [flutter, hello],
       ]) {
         for (final progress in [0.01, 0.25, 0.5, 0.75, 0.99]) {
-          final metrics =
-              PathUtil.lerpPath(paths[0], paths[1], progress, 1.5, controller)!
-                  .computeMetrics()
-                  .toList();
+          final metrics = PathUtil.lerpPath(paths[0], paths[1], progress, 1.5, controller)!
+              .computeMetrics()
+              .toList();
           expect(metrics, hasLength(count));
-          expect(metrics.every((metric) => metric.isClosed), isTrue,
-              reason: '$method at $progress must not break glyph contours');
+          expect(
+            metrics.every((metric) => metric.isClosed),
+            isTrue,
+            reason: '$method at $progress must not break glyph contours',
+          );
         }
       }
     }

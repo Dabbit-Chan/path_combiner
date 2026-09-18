@@ -6,11 +6,8 @@ import 'cff_font.dart';
 class OpenTypeFont {
   OpenTypeFont(ByteData data) : _data = data {
     final signature = _uint32(0);
-    if (signature != 0x00010000 &&
-        signature != 0x74727565 &&
-        signature != 0x4f54544f) {
-      throw UnsupportedError(
-          'Only static OpenType/TrueType fonts are supported');
+    if (signature != 0x00010000 && signature != 0x74727565 && signature != 0x4f54544f) {
+      throw UnsupportedError('Only static OpenType/TrueType fonts are supported');
     }
     final tableCount = _uint16(4);
     for (var index = 0; index < tableCount; index++) {
@@ -35,11 +32,13 @@ class OpenTypeFont {
     _readCharacterMaps();
     if (_tables.containsKey('CFF ')) {
       final table = _tables['CFF ']!;
-      _cff = CffFont(ByteData.sublistView(
-        _data,
-        table.offset,
-        table.offset + table.length,
-      ));
+      _cff = CffFont(
+        ByteData.sublistView(
+          _data,
+          table.offset,
+          table.offset + table.length,
+        ),
+      );
       return;
     }
     if (!_tables.containsKey('glyf') || !_tables.containsKey('loca')) {
@@ -88,9 +87,7 @@ class OpenTypeFont {
   Path? textPathForCodePoint(int codePoint) {
     if (_cff == null) return pathForCodePoint(codePoint);
     final glyph = _glyphIndex(codePoint);
-    return glyph == 0
-        ? null
-        : _cff!.pathForGlyph(glyph, unitsPerEm: unitsPerEm);
+    return glyph == 0 ? null : _cff!.pathForGlyph(glyph, unitsPerEm: unitsPerEm);
   }
 
   Path? pathForCodePoint(int codePoint) {
@@ -116,15 +113,13 @@ class OpenTypeFont {
           if (control == null) {
             path.lineTo(point.position.dx, point.position.dy);
           } else {
-            path.quadraticBezierTo(
-                control.dx, control.dy, point.position.dx, point.position.dy);
+            path.quadraticBezierTo(control.dx, control.dy, point.position.dx, point.position.dy);
             control = null;
           }
         } else {
           if (control != null) {
             final middle = (control + point.position) / 2;
-            path.quadraticBezierTo(
-                control.dx, control.dy, middle.dx, middle.dy);
+            path.quadraticBezierTo(control.dx, control.dy, middle.dx, middle.dy);
           }
           control = point.position;
         }
@@ -145,8 +140,7 @@ class OpenTypeFont {
       final record = table.offset + 4 + index * 8;
       final platform = _uint16(record);
       final encoding = _uint16(record + 2);
-      if (platform != 0 &&
-          !(platform == 3 && (encoding == 1 || encoding == 10))) {
+      if (platform != 0 && !(platform == 3 && (encoding == 1 || encoding == 10))) {
         continue;
       }
       final offset = table.offset + _uint32(record + 4);
@@ -220,14 +214,12 @@ class OpenTypeFont {
       throw const FormatException('Glyph index outside font');
     }
     if (ancestors.length >= 32 || !ancestors.add(glyph)) {
-      throw const FormatException(
-          'Cyclic or excessively nested compound glyph');
+      throw const FormatException('Cyclic or excessively nested compound glyph');
     }
     try {
       final locations = _tables['loca']!.offset;
-      final start = _longLocations
-          ? _uint32(locations + glyph * 4)
-          : _uint16(locations + glyph * 2) * 2;
+      final start =
+          _longLocations ? _uint32(locations + glyph * 4) : _uint16(locations + glyph * 2) * 2;
       final end = _longLocations
           ? _uint32(locations + (glyph + 1) * 4)
           : _uint16(locations + (glyph + 1) * 2) * 2;
@@ -282,10 +274,12 @@ class OpenTypeFont {
     return ends.map((end) {
       final contour = <_Point>[];
       for (var index = start; index <= end; index++) {
-        contour.add(_Point(
-          Offset(horizontal[index].toDouble(), vertical[index].toDouble()),
-          (flags[index] & 1) != 0,
-        ));
+        contour.add(
+          _Point(
+            Offset(horizontal[index].toDouble(), vertical[index].toDouble()),
+            (flags[index] & 1) != 0,
+          ),
+        );
       }
       start = end + 1;
       return contour;
@@ -325,9 +319,10 @@ class OpenTypeFont {
             point.dx * skewY + point.dy * scaleY,
           );
       final component = _readGlyph(glyph, ancestors)
-          .map((contour) => contour
-              .map((point) => _Point(transform(point.position), point.onCurve))
-              .toList())
+          .map(
+            (contour) =>
+                contour.map((point) => _Point(transform(point.position), point.onCurve)).toList(),
+          )
           .toList();
       Offset translation;
       if (xyArguments) {
@@ -342,17 +337,17 @@ class OpenTypeFont {
       } else {
         final parentPoints = contours.expand((contour) => contour).toList();
         final childPoints = component.expand((contour) => contour).toList();
-        if (argument1 >= parentPoints.length ||
-            argument2 >= childPoints.length) {
-          throw const FormatException(
-              'Invalid compound glyph point attachment');
+        if (argument1 >= parentPoints.length || argument2 >= childPoints.length) {
+          throw const FormatException('Invalid compound glyph point attachment');
         }
-        translation =
-            parentPoints[argument1].position - childPoints[argument2].position;
+        translation = parentPoints[argument1].position - childPoints[argument2].position;
       }
-      contours.addAll(component.map((contour) => contour
-          .map((point) => _Point(point.position + translation, point.onCurve))
-          .toList()));
+      contours.addAll(
+        component.map(
+          (contour) =>
+              contour.map((point) => _Point(point.position + translation, point.onCurve)).toList(),
+        ),
+      );
     } while ((flags & 32) != 0);
     return contours;
   }
@@ -365,9 +360,7 @@ class OpenTypeFont {
   }
 
   void _within(_Table table, int offset, int length) {
-    if (offset < table.offset ||
-        length < 0 ||
-        offset + length > table.offset + table.length) {
+    if (offset < table.offset || length < 0 || offset + length > table.offset + table.length) {
       throw const FormatException('Truncated or invalid TrueType table');
     }
   }

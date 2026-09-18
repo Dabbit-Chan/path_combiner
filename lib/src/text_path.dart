@@ -36,30 +36,24 @@ class TextPathConverter {
       throw ArgumentError('Specify exactly one of fontAsset or fontData');
     }
     if (!fontSize.isFinite || fontSize <= 0) {
-      throw ArgumentError.value(
-          fontSize, 'fontSize', 'Must be finite and positive');
+      throw ArgumentError.value(fontSize, 'fontSize', 'Must be finite and positive');
     }
     if (!letterSpacing.isFinite) {
-      throw ArgumentError.value(
-          letterSpacing, 'letterSpacing', 'Must be finite');
+      throw ArgumentError.value(letterSpacing, 'letterSpacing', 'Must be finite');
     }
     if (!lineHeight.isFinite || lineHeight <= 0) {
-      throw ArgumentError.value(
-          lineHeight, 'lineHeight', 'Must be finite and positive');
+      throw ArgumentError.value(lineHeight, 'lineHeight', 'Must be finite and positive');
     }
     if (!offset.dx.isFinite || !offset.dy.isFinite) {
       throw ArgumentError.value(offset, 'offset', 'Must be finite');
     }
     if (text.isEmpty) return Path();
-    final font =
-        fontData != null ? OpenTypeFont(fontData) : await _loadFont(fontAsset!);
+    final font = fontData != null ? OpenTypeFont(fontData) : await _loadFont(fontAsset!);
     final scale = fontSize / font.unitsPerEm;
     final result = Path();
     final outlines = <int, Path>{};
-    final normalized = text
-        .replaceAll('\r\n', '\n')
-        .replaceAll('\r', '\n')
-        .replaceAll('\t', '    ');
+    final normalized =
+        text.replaceAll('\r\n', '\n').replaceAll('\r', '\n').replaceAll('\t', '    ');
     var baseline = offset.dy + font.ascender * scale;
     for (final line in normalized.split('\n')) {
       var cursor = offset.dx;

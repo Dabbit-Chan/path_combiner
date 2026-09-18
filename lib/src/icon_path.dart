@@ -71,8 +71,7 @@ class IconPathConverter {
     final extent = math.max(bounds.width, bounds.height);
     if (extent == 0) return Path();
     final scale = size / extent;
-    final mirror =
-        icon.matchTextDirection && textDirection == TextDirection.rtl;
+    final mirror = icon.matchTextDirection && textDirection == TextDirection.rtl;
     final scaleX = mirror ? -scale : scale;
     final matrix = Float64List(16)
       ..[0] = scaleX
@@ -93,18 +92,15 @@ class IconPathConverter {
   Future<List<String>> _assetsFor(IconData icon) async {
     final family = icon.fontFamily;
     if (family == null) {
-      throw ArgumentError(
-          'IconData.fontFamily or explicit font data is required');
+      throw ArgumentError('IconData.fontFamily or explicit font data is required');
     }
     if (family == 'MaterialIcons' && icon.fontPackage == null) {
       return ['fonts/MaterialIcons-Regular.otf'];
     }
-    final qualifiedFamily = icon.fontPackage == null
-        ? family
-        : 'packages/${icon.fontPackage}/$family';
+    final qualifiedFamily =
+        icon.fontPackage == null ? family : 'packages/${icon.fontPackage}/$family';
     _manifest ??=
-        jsonDecode(await _bundle.loadString('FontManifest.json', cache: false))
-            as List<dynamic>;
+        jsonDecode(await _bundle.loadString('FontManifest.json', cache: false)) as List<dynamic>;
     final assets = <String>[];
     for (final entry in _manifest!) {
       if (entry['family'] == qualifiedFamily) {
