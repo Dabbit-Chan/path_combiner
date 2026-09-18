@@ -56,6 +56,7 @@ class _ExampleGalleryState extends State<ExampleGallery> {
   bool _textMode = false;
   double _duration = 800;
   CombineMethod _method = CombineMethod.space;
+  PaintingStyle _paintingStyle = PaintingStyle.stroke;
 
   bool get _custom => !identical(widget.examples, pathExamples);
   bool get _rtl => _selected == 1;
@@ -197,8 +198,12 @@ class _ExampleGalleryState extends State<ExampleGallery> {
                                 MotionControls(
                                   duration: _duration,
                                   method: _method,
+                                  paintingStyle: _paintingStyle,
                                   onDurationChanged: (value) => setState(() => _duration = value),
                                   onMethodChanged: (value) => setState(() => _method = value),
+                                  onPaintingStyleChanged: (value) => setState(() {
+                                    _paintingStyle = value;
+                                  }),
                                 ),
                               ],
                             ),
@@ -324,6 +329,7 @@ class _ExampleGalleryState extends State<ExampleGallery> {
                         child: PathCombiner(
                           path: snapshot.data![_showEnd ? 1 : 0],
                           color: studioMint,
+                          paintingStyle: _paintingStyle,
                           strokeWidth: 2,
                           duration: Duration(milliseconds: _duration.round()),
                           curve: Curves.easeInOutCubic,
@@ -374,6 +380,7 @@ class _ExampleGalleryState extends State<ExampleGallery> {
           ');\n\n'
           'PathCombiner(\n  path: showEnd ? end : start,\n'
           '  color: const Color(0xFFCAEFDF),\n'
+          '  paintingStyle: PaintingStyle.${_paintingStyle.name},\n'
           '  duration: Duration(milliseconds: ${_duration.round()}),\n'
           '  combineMethod: CombineMethod.${_method.name},\n);';
 }

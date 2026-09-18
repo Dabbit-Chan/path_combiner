@@ -8,6 +8,7 @@ class PathCombiner extends ImplicitlyAnimatedWidget {
     required this.path,
     this.controller,
     required this.color,
+    this.paintingStyle = PaintingStyle.stroke,
     this.strokeWidth = 5,
     this.strokeCap = StrokeCap.round,
     this.strokeJoin = StrokeJoin.round,
@@ -21,6 +22,7 @@ class PathCombiner extends ImplicitlyAnimatedWidget {
   final Path path;
   final PathCombineController? controller;
   final Color color;
+  final PaintingStyle paintingStyle;
   final double strokeWidth;
   final StrokeCap strokeCap;
   final StrokeJoin strokeJoin;
@@ -71,6 +73,7 @@ class _PathCombinerState extends AnimatedWidgetBaseState<PathCombiner> {
       painter: _PathCombinerPainter(
         path: _path?.evaluate(animation),
         color: widget.color,
+        paintingStyle: widget.paintingStyle,
         strokeWidth: widget.strokeWidth,
         strokeCap: widget.strokeCap,
         strokeJoin: widget.strokeJoin,
@@ -83,6 +86,7 @@ class _PathCombinerPainter extends CustomPainter {
   _PathCombinerPainter({
     required this.path,
     required this.color,
+    required this.paintingStyle,
     required this.strokeWidth,
     required this.strokeCap,
     required this.strokeJoin,
@@ -90,6 +94,7 @@ class _PathCombinerPainter extends CustomPainter {
 
   final Path? path;
   final Color color;
+  final PaintingStyle paintingStyle;
   final double strokeWidth;
   final StrokeCap strokeCap;
   final StrokeJoin strokeJoin;
@@ -98,7 +103,7 @@ class _PathCombinerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (path != null) {
       Paint paint = Paint()
-        ..style = PaintingStyle.stroke
+        ..style = paintingStyle
         ..color = color
         ..strokeWidth = strokeWidth
         ..strokeCap = strokeCap
@@ -110,6 +115,11 @@ class _PathCombinerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _PathCombinerPainter oldDelegate) {
-    return path != oldDelegate.path;
+    return path != oldDelegate.path ||
+        color != oldDelegate.color ||
+        paintingStyle != oldDelegate.paintingStyle ||
+        strokeWidth != oldDelegate.strokeWidth ||
+        strokeCap != oldDelegate.strokeCap ||
+        strokeJoin != oldDelegate.strokeJoin;
   }
 }

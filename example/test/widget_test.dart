@@ -132,7 +132,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('duration and combine method controls update the animator', (tester) async {
+  testWidgets('motion and painting controls update the animator', (tester) async {
     _setView(tester, const Size(900, 1200));
     await tester.pumpWidget(MyApp(examples: readyExamples));
     await tester.pumpAndSettle();
@@ -155,6 +155,14 @@ void main() {
     expect(
       tester.widget<PathCombiner>(find.byType(PathCombiner)).combineMethod,
       CombineMethod.center,
+    );
+    final paintingStyle = find.byKey(const ValueKey('painting-style'));
+    await tester.ensureVisible(paintingStyle);
+    await tester.tap(find.descendant(of: paintingStyle, matching: find.text('fill')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<PathCombiner>(find.byType(PathCombiner)).paintingStyle,
+      PaintingStyle.fill,
     );
   });
 

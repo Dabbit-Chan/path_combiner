@@ -31,6 +31,7 @@ class _TextPathExampleState extends State<TextPathExample> {
   int _revision = 0;
   double _duration = 800;
   CombineMethod _method = CombineMethod.space;
+  PaintingStyle _paintingStyle = PaintingStyle.stroke;
 
   @override
   void initState() {
@@ -200,6 +201,7 @@ class _TextPathExampleState extends State<TextPathExample> {
                           key: ValueKey('text-preview-$_revision'),
                           path: _paths![selected],
                           color: studioMint,
+                          paintingStyle: _paintingStyle,
                           strokeWidth: 1.5,
                           precision: 1.5,
                           duration: Duration(milliseconds: _duration.round()),
@@ -235,8 +237,12 @@ class _TextPathExampleState extends State<TextPathExample> {
             child: MotionControls(
               duration: _duration,
               method: _method,
+              paintingStyle: _paintingStyle,
               onDurationChanged: (value) => setState(() => _duration = value),
               onMethodChanged: (value) => setState(() => _method = value),
+              onPaintingStyleChanged: (value) => setState(() {
+                _paintingStyle = value;
+              }),
             ),
           ),
         ],
@@ -297,6 +303,12 @@ class _TextPathExampleState extends State<TextPathExample> {
         'final end = await ${literal(labels[1])}.toPath(\n'
         "  fontAsset: 'assets/fonts/Roboto-Regular.ttf',\n"
         '  fontSize: 80,\n);\n\n'
-        '// 预览中另将两条路径统一缩放，并平移至画布中心。';
+        '// 预览中另将两条路径统一缩放，并平移至画布中心。\n\n'
+        'PathCombiner(\n'
+        '  path: showSecond ? end : start,\n'
+        '  color: const Color(0xFFCAEFDF),\n'
+        '  paintingStyle: PaintingStyle.${_paintingStyle.name},\n'
+        '  duration: const Duration(milliseconds: 800),\n'
+        ');';
   }
 }

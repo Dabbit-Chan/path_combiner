@@ -9,6 +9,43 @@ import 'package:path_combiner/src/path_lerp.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  testWidgets('PathCombiner defaults to stroke and accepts a painting style', (tester) async {
+    final path = Path()..addRect(const Rect.fromLTWH(0, 0, 20, 20));
+
+    Future<void> pump({PaintingStyle? paintingStyle}) => tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: SizedBox.square(
+              dimension: 20,
+              child: paintingStyle == null
+                  ? PathCombiner(
+                      path: path,
+                      color: const Color(0xFF000000),
+                      duration: Duration.zero,
+                    )
+                  : PathCombiner(
+                      path: path,
+                      color: const Color(0xFF000000),
+                      paintingStyle: paintingStyle,
+                      duration: Duration.zero,
+                    ),
+            ),
+          ),
+        );
+
+    await pump();
+    var widget = tester.widget<PathCombiner>(find.byType(PathCombiner));
+    expect(widget.paintingStyle, PaintingStyle.stroke);
+    dynamic painter = tester.widget<CustomPaint>(find.byType(CustomPaint)).painter;
+    expect(painter.paintingStyle, PaintingStyle.stroke);
+
+    await pump(paintingStyle: PaintingStyle.fill);
+    widget = tester.widget<PathCombiner>(find.byType(PathCombiner));
+    expect(widget.paintingStyle, PaintingStyle.fill);
+    painter = tester.widget<CustomPaint>(find.byType(CustomPaint)).painter;
+    expect(painter.paintingStyle, PaintingStyle.fill);
+  });
+
   for (final method in CombineMethod.values) {
     final controller = PathCombineController()..combineMethod = method;
 

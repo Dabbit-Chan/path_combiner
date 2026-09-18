@@ -111,13 +111,17 @@ class MotionControls extends StatelessWidget {
     super.key,
     required this.duration,
     required this.method,
+    required this.paintingStyle,
     required this.onDurationChanged,
     required this.onMethodChanged,
+    required this.onPaintingStyleChanged,
   });
   final double duration;
   final CombineMethod method;
+  final PaintingStyle paintingStyle;
   final ValueChanged<double> onDurationChanged;
   final ValueChanged<CombineMethod> onMethodChanged;
+  final ValueChanged<PaintingStyle> onPaintingStyleChanged;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -155,6 +159,16 @@ class MotionControls extends StatelessWidget {
                 },
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          SegmentedButton<PaintingStyle>(
+            key: const ValueKey('painting-style'),
+            segments: const [
+              ButtonSegment(value: PaintingStyle.stroke, label: Text('stroke')),
+              ButtonSegment(value: PaintingStyle.fill, label: Text('fill')),
+            ],
+            selected: {paintingStyle},
+            onSelectionChanged: (selection) => onPaintingStyleChanged(selection.first),
           ),
           const SizedBox(height: 16),
           const Text(
