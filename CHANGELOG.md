@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Added a caching mechanism for path preprocessing.
+* Improved animation performance by reusing prepared contour samples between frames.
+
 ## 1.0.0
 
 * Added **Icon to Path**: convert any `IconData` to a `Path` with `IconData.toPath()`.
