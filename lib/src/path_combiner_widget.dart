@@ -34,9 +34,13 @@ class PathCombiner extends ImplicitlyAnimatedWidget {
 }
 
 class _PathCombinerState extends AnimatedWidgetBaseState<PathCombiner> {
+  /// Flutter 复用的路径 Tween，同时持有当前起终点的预处理缓存。
   PathTween? _path;
 
+  /// 未传外部 controller 时，懒创建并复用的内部配置对象。
   PathCombineController? _controller;
+
+  /// 优先使用调用方的 controller，否则使用内部对象。
   PathCombineController get _effectiveController =>
       widget.controller ?? (_controller ??= PathCombineController());
 
@@ -48,6 +52,8 @@ class _PathCombinerState extends AnimatedWidgetBaseState<PathCombiner> {
 
   @override
   void forEachTween(TweenVisitor<dynamic> visitor) {
+    // 交给 Flutter 创建或更新 Tween；不是每次 build 都创建新对象。
+    // 动画中途切换目标时，框架会以当前插值结果作为新的 begin。
     _path = visitor(
       _path,
       widget.path,
@@ -63,14 +69,20 @@ class _PathCombinerState extends AnimatedWidgetBaseState<PathCombiner> {
   @override
   void didUpdateWidget(covariant PathCombiner oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _path?.paintingStyle = widget.paintingStyle;
-    if (oldWidget.combineMethod != widget.combineMethod) {
+    if (oldWidget.combineMethod != widget.combineMethod ||
+        oldWidget.controller != widget.controller) {
       _effectiveController.combineMethod = widget.combineMethod;
     }
+    // 只同步配置；缓存由下一帧 lerp 按需更新，避免在这里重复做预处理。
+    _path
+      ?..paintingStyle = widget.paintingStyle
+      ..precision = widget.precision
+      ..controller = _effectiveController;
   }
 
   @override
   Widget build(BuildContext context) {
+    // ticker 驱动 evaluate；缓存有效时只插值已准备的点并构建当前帧路径。
     return CustomPaint(
       painter: _PathCombinerPainter(
         path: _path?.evaluate(animation),

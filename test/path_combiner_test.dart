@@ -9,6 +9,65 @@ import 'package:path_combiner/src/path_lerp.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('cached frames match uncached interpolation for every mode', () {
+    final source = Path()
+      ..addRect(const Rect.fromLTWH(0, 0, 20, 10))
+      ..addRect(const Rect.fromLTWH(0, 40, 20, 10))
+      ..addRect(const Rect.fromLTWH(0, 80, 20, 10));
+    final target = Path()
+      ..addOval(const Rect.fromLTWH(20, 10, 50, 30))
+      ..addRect(const Rect.fromLTWH(30, 70, 20, 10));
+    for (final style in PaintingStyle.values) {
+      for (final method in CombineMethod.values) {
+        final controller = PathCombineController()..combineMethod = method;
+        final tween = PathTween(
+          begin: source,
+          precision: 2,
+          controller: controller,
+          paintingStyle: style,
+        )..end = target;
+        for (final progress in [0.01, 0.25, 0.5, 0.75, 0.99]) {
+          final actual = tween.lerp(progress)!;
+          final expected = PathUtil.lerpPath(
+            source,
+            target,
+            progress,
+            2,
+            controller,
+            paintingStyle: style,
+          )!;
+          final actualMetrics = actual.computeMetrics().toList();
+          final expectedMetrics = expected.computeMetrics().toList();
+          expect(actual.fillType, expected.fillType);
+          expect(actualMetrics.length, expectedMetrics.length);
+          for (var index = 0; index < actualMetrics.length; index++) {
+            expect(actualMetrics[index].length, expectedMetrics[index].length);
+            for (final fraction in [0.0, 0.25, 0.5, 0.75, 1.0]) {
+              final distance = expectedMetrics[index].length * fraction;
+              expect(
+                actualMetrics[index].getTangentForOffset(distance)!.position,
+                expectedMetrics[index].getTangentForOffset(distance)!.position,
+              );
+            }
+          }
+        }
+      }
+    }
+  });
+
+  test('empty-path preparation is cached and invalid precision is rejected', () {
+    final source = Path();
+    final target = Path()..addRect(const Rect.fromLTWH(0, 0, 20, 20));
+    final tween = PathTween(begin: source, precision: 1, controller: PathCombineController())
+      ..end = target;
+    expect(tween.lerp(0.25), same(source));
+    expect(tween.lerp(0.75), same(target));
+    for (final precision in [0.0, -1.0, double.infinity, double.nan]) {
+      tween.precision = precision;
+      expect(() => tween.lerp(0.5), throwsArgumentError);
+    }
+  });
+
   testWidgets('PathCombiner defaults to stroke and accepts a painting style', (tester) async {
     final path = Path()..addRect(const Rect.fromLTWH(0, 0, 20, 20));
 
