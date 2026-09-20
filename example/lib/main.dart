@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:path_combiner/path_combiner.dart';
 
 import 'path_examples.dart';
+import 'sequence_path_example.dart';
 import 'studio_widgets.dart';
 import 'text_path_example.dart';
 
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
         title: 'Path Studio',
         theme: ThemeData(
           useMaterial3: true,
+          fontFamilyFallback: const ['Alimama'],
           scaffoldBackgroundColor: const Color(0xFFF5F6F0),
           colorScheme: ColorScheme.fromSeed(seedColor: studioGreen, primary: studioGreen),
           inputDecorationTheme: InputDecorationTheme(
@@ -54,6 +56,7 @@ class _ExampleGalleryState extends State<ExampleGallery> {
   IconChoice _directional = directionalChoices.first;
   bool _showEnd = false;
   bool _textMode = false;
+  bool _sequenceMode = false;
   double _duration = 800;
   CombineMethod _method = CombineMethod.space;
   PaintingStyle _paintingStyle = PaintingStyle.stroke;
@@ -121,23 +124,38 @@ class _ExampleGalleryState extends State<ExampleGallery> {
                           ChoiceChip(
                             key: ValueKey('example-$index'),
                             label: Text('0${index + 1}  ${widget.examples[index].title}'),
-                            selected: !_textMode && _selected == index,
+                            selected: !_textMode && !_sequenceMode && _selected == index,
                             onSelected: (_) => setState(() {
                               _selected = index;
                               _showEnd = false;
                               _textMode = false;
+                              _sequenceMode = false;
                             }),
                           ),
                         ChoiceChip(
                           key: const ValueKey('open-text-example'),
                           label: const Text('03  Text 变形'),
                           selected: _textMode,
-                          onSelected: (_) => setState(() => _textMode = true),
+                          onSelected: (_) => setState(() {
+                            _textMode = true;
+                            _sequenceMode = false;
+                          }),
+                        ),
+                        ChoiceChip(
+                          key: const ValueKey('open-sequence-example'),
+                          label: const Text('04  多阶段循环'),
+                          selected: _sequenceMode,
+                          onSelected: (_) => setState(() {
+                            _sequenceMode = true;
+                            _textMode = false;
+                          }),
                         ),
                       ],
                     ),
                     const SizedBox(height: 32),
-                    if (_textMode)
+                    if (_sequenceMode)
+                      const SequencePathExample()
+                    else if (_textMode)
                       const TextPathExample(embedded: true)
                     else ...[
                       StudioHeading(
@@ -247,37 +265,15 @@ class _ExampleGalleryState extends State<ExampleGallery> {
     List<IconChoice> choices,
     ValueChanged<IconChoice> update,
   ) =>
-      DropdownButtonFormField<IconChoice>(
+      IconChoicePicker(
         key: ValueKey(key),
-        initialValue: value,
-        isExpanded: true,
-        decoration: InputDecoration(labelText: label),
-        items: [
-          for (final choice in choices)
-            DropdownMenuItem(
-              value: choice,
-              child: Row(
-                children: [
-                  Icon(choice.icon, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      '${choice.family} · ${choice.label}',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-        onChanged: (choice) {
-          if (choice != null) {
-            setState(() {
-              update(choice);
-              _showEnd = false;
-            });
-          }
-        },
+        value: value,
+        label: label,
+        choices: choices,
+        onChanged: (choice) => setState(() {
+          update(choice);
+          _showEnd = false;
+        }),
       );
 
   Widget _preview() => PreviewStage(

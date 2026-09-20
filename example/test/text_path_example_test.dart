@@ -10,7 +10,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
-    await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    await rootBundle.load(baseFontAsset);
+    await convertExampleText('你好，世界！Hello 2026');
   });
 
   testWidgets('opens text example from existing gallery', (tester) async {
@@ -76,11 +77,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(_label(tester), 'Flutter');
     expect(tester.takeException(), isNull);
-    await tester.enterText(find.byKey(const ValueKey('text-start')), '中');
+    await tester.enterText(find.byKey(const ValueKey('text-start')), '你好，世界！Hello 2026');
+    await tester.tap(find.byKey(const ValueKey('generate-text')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('text-error')), findsNothing);
+    expect(_label(tester), '你好，世界！Hello 2026');
+    expect(
+      tester.widget<PathCombiner>(find.byType(PathCombiner)).path.computeMetrics(),
+      isNotEmpty,
+    );
+    await tester.enterText(find.byKey(const ValueKey('text-start')), '\u{10FFFF}');
     await tester.tap(find.byKey(const ValueKey('generate-text')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('text-error')), findsOneWidget);
-    expect(find.textContaining('U+4E2D'), findsOneWidget);
+    expect(find.textContaining('U+10FFFF'), findsOneWidget);
     await tester.enterText(find.byKey(const ValueKey('text-start')), 'Fixed');
     await tester.tap(find.byKey(const ValueKey('generate-text')));
     await tester.pumpAndSettle();

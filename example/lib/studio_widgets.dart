@@ -1,9 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:path_combiner/path_combiner.dart';
 
+import 'path_examples.dart';
+
 const studioInk = Color(0xFF192C29);
 const studioGreen = Color(0xFF257864);
 const studioMint = Color(0xFFCAEFDF);
+
+class IconChoicePicker extends StatelessWidget {
+  const IconChoicePicker({
+    super.key,
+    required this.value,
+    required this.label,
+    required this.onChanged,
+    this.choices = iconChoices,
+  });
+
+  final IconChoice value;
+  final String label;
+  final List<IconChoice> choices;
+  final ValueChanged<IconChoice> onChanged;
+
+  @override
+  Widget build(BuildContext context) => DropdownButtonFormField<IconChoice>(
+        initialValue: value,
+        isExpanded: true,
+        menuMaxHeight: 420,
+        decoration: InputDecoration(labelText: label),
+        items: [
+          for (final choice in choices)
+            DropdownMenuItem(
+              value: choice,
+              child: Row(
+                children: [
+                  Icon(choice.icon, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child:
+                        Text('${choice.family} · ${choice.label}', overflow: TextOverflow.ellipsis),
+                  ),
+                ],
+              ),
+            ),
+        ],
+        onChanged: (choice) {
+          if (choice != null) onChanged(choice);
+        },
+      );
+}
 
 class StudioPanel extends StatelessWidget {
   const StudioPanel({super.key, required this.child});

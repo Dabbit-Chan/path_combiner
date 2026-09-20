@@ -60,8 +60,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/fonts/Roboto-Regular.ttf
-    - assets/fonts/Roboto_LICENSE.txt
+    - assets/fonts/alimama_700.ttf
+  fonts:
+    - family: Alimama
+      fonts:
+        - asset: assets/fonts/alimama_700.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

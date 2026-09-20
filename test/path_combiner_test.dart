@@ -270,9 +270,9 @@ void main() {
     });
   }
 
-  test('Roboto Hello / Flutter keeps every contour closed in both directions', () async {
+  test('Alimama Hello / Flutter keeps every contour closed in both directions', () async {
     final font = ByteData.sublistView(
-      await File('example/assets/fonts/Roboto-Regular.ttf').readAsBytes(),
+      await File('example/assets/fonts/alimama_700.ttf').readAsBytes(),
     );
     final hello = await 'Hello'.toPath(fontData: font, fontSize: 80);
     final flutter = await 'Flutter'.toPath(fontData: font, fontSize: 80);

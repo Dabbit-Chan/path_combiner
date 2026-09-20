@@ -1,10 +1,9 @@
 import 'dart:convert';
-import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:path_combiner/path_combiner.dart';
 
+import 'path_examples.dart';
 import 'studio_widgets.dart';
 
 class TextPathExample extends StatefulWidget {
@@ -17,10 +16,9 @@ class TextPathExample extends StatefulWidget {
 }
 
 class _TextPathExampleState extends State<TextPathExample> {
-  static const _canvasSize = Size(600, 240);
+  static const _canvasSize = textCanvasSize;
   final _first = TextEditingController(text: 'Hello');
   final _second = TextEditingController(text: 'Flutter');
-  final _converter = TextPathConverter();
   List<Path>? _paths;
   List<String> _labels = [];
   bool _showSecond = false;
@@ -44,7 +42,6 @@ class _TextPathExampleState extends State<TextPathExample> {
     _request++;
     _first.dispose();
     _second.dispose();
-    _converter.clearCache();
     super.dispose();
   }
 
@@ -58,37 +55,9 @@ class _TextPathExampleState extends State<TextPathExample> {
     try {
       final paths = <Path>[];
       for (final text in labels) {
-        paths.add(
-          await _converter.convert(
-            text,
-            fontAsset: 'assets/fonts/Roboto-Regular.ttf',
-            fontSize: 80,
-          ),
-        );
+        paths.add(await convertExampleText(text));
       }
-      var width = 0.0;
-      var height = 0.0;
-      for (final path in paths) {
-        final bounds = path.getBounds();
-        width = math.max(width, bounds.width);
-        height = math.max(height, bounds.height);
-      }
-      final scale = math.min(
-        1.0,
-        math.min(width == 0 ? 1.0 : 560 / width, height == 0 ? 1.0 : 200 / height),
-      );
-      final fitted = paths.map((path) {
-        final center = path.getBounds().center;
-        return path.transform(
-          Float64List(16)
-            ..[0] = scale
-            ..[5] = scale
-            ..[10] = 1
-            ..[12] = _canvasSize.width / 2 - center.dx * scale
-            ..[13] = _canvasSize.height / 2 - center.dy * scale
-            ..[15] = 1,
-        );
-      }).toList();
+      final fitted = fitExamplePaths(paths);
       if (!mounted || request != _request) return;
       setState(() {
         _paths = fitted;
@@ -155,7 +124,7 @@ class _TextPathExampleState extends State<TextPathExample> {
                     label: Text(_loading ? '正在生成…' : '生成文字轮廓'),
                   ),
                   Text(
-                    _dirty ? '文字已修改，点击生成更新预览' : '支持英文、数字、符号与换行',
+                    _dirty ? '文字已修改，点击生成更新预览' : '支持中文、英文、数字、符号与换行',
                     style: const TextStyle(color: Color(0xFF697A73), fontSize: 12),
                   ),
                 ],
@@ -254,8 +223,9 @@ class _TextPathExampleState extends State<TextPathExample> {
               Text('关于字体与排版', style: TextStyle(fontWeight: FontWeight.w700)),
               SizedBox(height: 10),
               Text(
-                '内置 Roboto，支持英文、数字及常见符号，不含中文字形。'
-                '中文需换用包含中文的静态 TTF / OTF 字体。\n'
+                '内置阿里妈妈数黑体（Bold）静态字体，中英文与数字共用同一套字形与基线。'
+                '字体随网站部署，不依赖系统字体或第三方字体服务；字库覆盖常用汉字，'
+                '生僻字可能不在字库中，缺字会提示 Unicode 编码。\n'
                 '两段文本按真实字宽排版、统一缩放并居中；支持换行，不提供复杂文字塑形、双向排版或 emoji 合成。'
                 '空白文本没有轮廓，与非空文本在动画中点直接切换。',
                 style: TextStyle(fontSize: 12, height: 1.8, color: Color(0xFF697A73)),
@@ -298,10 +268,10 @@ class _TextPathExampleState extends State<TextPathExample> {
     final labels = _labels.isEmpty ? ['Hello', 'Flutter'] : _labels;
     String literal(String value) => jsonEncode(value).replaceAll(r'$', r'\$');
     return 'final start = await ${literal(labels[0])}.toPath(\n'
-        "  fontAsset: 'assets/fonts/Roboto-Regular.ttf',\n"
+        "  fontAsset: '$baseFontAsset',\n"
         '  fontSize: 80,\n);\n'
         'final end = await ${literal(labels[1])}.toPath(\n'
-        "  fontAsset: 'assets/fonts/Roboto-Regular.ttf',\n"
+        "  fontAsset: '$baseFontAsset',\n"
         '  fontSize: 80,\n);\n\n'
         '// 预览中另将两条路径统一缩放，并平移至画布中心。\n\n'
         'PathCombiner(\n'

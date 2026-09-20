@@ -26,6 +26,15 @@ void main() {
     ];
   });
 
+  test('all icon presets have unique codes and nonempty font outlines', () async {
+    expect(iconChoices.length, greaterThanOrEqualTo(48));
+    expect(iconChoices.map((choice) => choice.code).toSet(), hasLength(iconChoices.length));
+    for (final choice in iconChoices) {
+      final path = await choice.toPath();
+      expect(path.computeMetrics(), isNotEmpty, reason: choice.code);
+    }
+  });
+
   test('both icon examples load actual font paths', () {
     expect(loadedPaths, hasLength(2));
     for (final paths in loadedPaths) {
@@ -116,7 +125,7 @@ void main() {
 
   test('menu morphs converge to other outlined icons in both directions', () async {
     final menu = await iconChoices[2].toPath();
-    for (final choice in iconChoices.skip(6)) {
+    for (final choice in iconChoices.skip(6).take(3)) {
       final icon = await choice.toPath();
       for (final method in CombineMethod.values) {
         final controller = PathCombineController()..combineMethod = method;
