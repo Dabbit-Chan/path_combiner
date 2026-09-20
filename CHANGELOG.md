@@ -1,3 +1,7 @@
+## 1.0.1+1
+
+* Updated the example app
+
 ## 1.0.1
 
 * Added a caching mechanism for path preprocessing.
