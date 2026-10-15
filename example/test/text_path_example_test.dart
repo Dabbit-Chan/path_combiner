@@ -65,6 +65,27 @@ void main() {
     expect(second.getBounds().bottom, lessThanOrEqualTo(220.01));
   });
 
+  testWidgets('text example forwards matching selection and updates its code', (tester) async {
+    _largeView(tester);
+    await tester.pumpWidget(const MaterialApp(home: TextPathExample()));
+    await tester.pumpAndSettle();
+    final dropdown = find.byKey(const ValueKey('contour-match-method'));
+    await tester.ensureVisible(dropdown);
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('greedy').last);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<PathCombiner>(find.byType(PathCombiner)).contourMatchMethod,
+      ContourMatchMethod.greedy,
+    );
+    final code = find.text('查看实现代码');
+    await tester.ensureVisible(code);
+    await tester.tap(code);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('contourMatchMethod: ContourMatchMethod.greedy'), findsOneWidget);
+  });
+
   testWidgets('blank text and missing glyphs can be recovered from', (tester) async {
     _largeView(tester);
     await tester.pumpWidget(const MaterialApp(home: TextPathExample()));

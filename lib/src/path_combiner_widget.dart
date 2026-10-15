@@ -13,6 +13,7 @@ class PathCombiner extends ImplicitlyAnimatedWidget {
     this.strokeCap = StrokeCap.round,
     this.strokeJoin = StrokeJoin.round,
     this.combineMethod = CombineMethod.space,
+    this.contourMatchMethod = ContourMatchMethod.ordered,
     this.precision = 1,
     super.curve,
     required super.duration,
@@ -27,6 +28,7 @@ class PathCombiner extends ImplicitlyAnimatedWidget {
   final StrokeCap strokeCap;
   final StrokeJoin strokeJoin;
   final CombineMethod combineMethod;
+  final ContourMatchMethod contourMatchMethod;
   final double precision;
 
   @override
@@ -48,6 +50,7 @@ class _PathCombinerState extends AnimatedWidgetBaseState<PathCombiner> {
   void initState() {
     super.initState();
     _effectiveController.combineMethod = widget.combineMethod;
+    _effectiveController.contourMatchMethod = widget.contourMatchMethod;
   }
 
   @override
@@ -72,6 +75,10 @@ class _PathCombinerState extends AnimatedWidgetBaseState<PathCombiner> {
     if (oldWidget.combineMethod != widget.combineMethod ||
         oldWidget.controller != widget.controller) {
       _effectiveController.combineMethod = widget.combineMethod;
+    }
+    if (oldWidget.contourMatchMethod != widget.contourMatchMethod ||
+        oldWidget.controller != widget.controller) {
+      _effectiveController.contourMatchMethod = widget.contourMatchMethod;
     }
     // 只同步配置；缓存由下一帧 lerp 按需更新，避免在这里重复做预处理。
     _path

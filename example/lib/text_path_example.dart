@@ -29,6 +29,7 @@ class _TextPathExampleState extends State<TextPathExample> {
   int _revision = 0;
   double _duration = 800;
   CombineMethod _method = CombineMethod.space;
+  ContourMatchMethod _contourMatchMethod = ContourMatchMethod.ordered;
   PaintingStyle _paintingStyle = PaintingStyle.stroke;
 
   @override
@@ -175,6 +176,7 @@ class _TextPathExampleState extends State<TextPathExample> {
                           precision: 1.5,
                           duration: Duration(milliseconds: _duration.round()),
                           combineMethod: _method,
+                          contourMatchMethod: _contourMatchMethod,
                           curve: Curves.easeInOutCubic,
                         ),
                       ),
@@ -206,9 +208,11 @@ class _TextPathExampleState extends State<TextPathExample> {
             child: MotionControls(
               duration: _duration,
               method: _method,
+              contourMatchMethod: _contourMatchMethod,
               paintingStyle: _paintingStyle,
               onDurationChanged: (value) => setState(() => _duration = value),
               onMethodChanged: (value) => setState(() => _method = value),
+              onContourMatchMethodChanged: (value) => setState(() => _contourMatchMethod = value),
               onPaintingStyleChanged: (value) => setState(() {
                 _paintingStyle = value;
               }),
@@ -278,7 +282,9 @@ class _TextPathExampleState extends State<TextPathExample> {
         '  path: showSecond ? end : start,\n'
         '  color: const Color(0xFFCAEFDF),\n'
         '  paintingStyle: PaintingStyle.${_paintingStyle.name},\n'
-        '  duration: const Duration(milliseconds: 800),\n'
+        '  duration: Duration(milliseconds: ${_duration.round()}),\n'
+        '  combineMethod: CombineMethod.${_method.name},\n'
+        '  contourMatchMethod: ContourMatchMethod.${_contourMatchMethod.name},\n'
         ');';
   }
 }

@@ -22,6 +22,27 @@ void main() {
     actualPaths = await loadSequencePaths(steps);
   });
 
+  testWidgets('sequence example forwards matching selection and updates its code', (tester) async {
+    _view(tester);
+    await tester.pumpWidget(_host((_) async => actualPaths));
+    await tester.pumpAndSettle();
+    final dropdown = find.byKey(const ValueKey('contour-match-method'));
+    await tester.ensureVisible(dropdown);
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('hungarian').last);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<PathCombiner>(find.byType(PathCombiner)).contourMatchMethod,
+      ContourMatchMethod.hungarian,
+    );
+    final code = find.text('查看实现代码');
+    await tester.ensureVisible(code);
+    await tester.tap(code);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('contourMatchMethod: ContourMatchMethod.hungarian'), findsOneWidget);
+  });
+
   test('mixed sequence loads real centered Chinese and icon paths', () async {
     expect(actualPaths, hasLength(5));
     for (final path in actualPaths) {

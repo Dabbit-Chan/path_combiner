@@ -59,6 +59,7 @@ class _ExampleGalleryState extends State<ExampleGallery> {
   bool _sequenceMode = false;
   double _duration = 800;
   CombineMethod _method = CombineMethod.space;
+  ContourMatchMethod _contourMatchMethod = ContourMatchMethod.ordered;
   PaintingStyle _paintingStyle = PaintingStyle.stroke;
 
   bool get _custom => !identical(widget.examples, pathExamples);
@@ -216,9 +217,12 @@ class _ExampleGalleryState extends State<ExampleGallery> {
                                 MotionControls(
                                   duration: _duration,
                                   method: _method,
+                                  contourMatchMethod: _contourMatchMethod,
                                   paintingStyle: _paintingStyle,
                                   onDurationChanged: (value) => setState(() => _duration = value),
                                   onMethodChanged: (value) => setState(() => _method = value),
+                                  onContourMatchMethodChanged: (value) =>
+                                      setState(() => _contourMatchMethod = value),
                                   onPaintingStyleChanged: (value) => setState(() {
                                     _paintingStyle = value;
                                   }),
@@ -330,6 +334,7 @@ class _ExampleGalleryState extends State<ExampleGallery> {
                           duration: Duration(milliseconds: _duration.round()),
                           curve: Curves.easeInOutCubic,
                           combineMethod: _method,
+                          contourMatchMethod: _contourMatchMethod,
                         ),
                       ),
                     ),
@@ -378,5 +383,6 @@ class _ExampleGalleryState extends State<ExampleGallery> {
           '  color: const Color(0xFFCAEFDF),\n'
           '  paintingStyle: PaintingStyle.${_paintingStyle.name},\n'
           '  duration: Duration(milliseconds: ${_duration.round()}),\n'
-          '  combineMethod: CombineMethod.${_method.name},\n);';
+          '  combineMethod: CombineMethod.${_method.name},\n'
+          '  contourMatchMethod: ContourMatchMethod.${_contourMatchMethod.name},\n);';
 }

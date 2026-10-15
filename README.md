@@ -63,7 +63,8 @@ center them. Switch to another `Path` instance instead of modifying the current 
 | `strokeWidth` | `5` | Set the outline width in logical pixels; used in stroke mode. |
 | `strokeCap` | `StrokeCap.round` | Set open line endings: `butt`, `round`, or `square`. |
 | `strokeJoin` | `StrokeJoin.round` | Set stroke corners: `miter`, `round`, or `bevel`. |
-| `combineMethod` | `CombineMethod.space` | Choose a transition style from the options below. |
+| `combineMethod` | `CombineMethod.space` | Choose how sample points are padded. |
+| `contourMatchMethod` | `ContourMatchMethod.ordered` | Choose how contours are paired before interpolating points. |
 | `precision` | `1` | Set a finite positive sampling interval. Smaller values give finer detail but cost more; start with `1`. |
 | `controller` | `null` | Optionally pass a `PathCombineController()` stored in your `State`. Usually omit it and set `combineMethod` directly; this is not an `AnimationController` for playback. |
 | `onEnd` | `null` | Run a callback when the animation finishes, such as `() => debugPrint('Done')`. |
@@ -78,6 +79,18 @@ sample counts. Try the options in the demo to choose the effect you prefer:
 | `CombineMethod.end` | Repeat points at the end. |
 | `CombineMethod.center` | Repeat points around the middle. |
 | `CombineMethod.space` | Distribute repeated points evenly; the default. |
+
+`contourMatchMethod` operates independently of point padding:
+
+| Value | Behavior |
+| --- | --- |
+| `ContourMatchMethod.ordered` | Pair contours in input order; preserves the default behavior. |
+| `ContourMatchMethod.greedy` | Repeatedly choose the cheapest remaining geometric pair. |
+| `ContourMatchMethod.hungarian` | Minimize the total geometric matching cost. |
+
+Set `contourMatchMethod: ContourMatchMethod.hungarian` on `PathCombiner`, or
+assign `controller.contourMatchMethod = ContourMatchMethod.hungarian` directly.
+Like `combineMethod`, the widget parameter initializes the controller configuration.
 
 ## Animate icons
 

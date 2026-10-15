@@ -155,16 +155,20 @@ class MotionControls extends StatelessWidget {
     super.key,
     required this.duration,
     required this.method,
+    required this.contourMatchMethod,
     required this.paintingStyle,
     required this.onDurationChanged,
     required this.onMethodChanged,
+    required this.onContourMatchMethodChanged,
     required this.onPaintingStyleChanged,
   });
   final double duration;
   final CombineMethod method;
+  final ContourMatchMethod contourMatchMethod;
   final PaintingStyle paintingStyle;
   final ValueChanged<double> onDurationChanged;
   final ValueChanged<CombineMethod> onMethodChanged;
+  final ValueChanged<ContourMatchMethod> onContourMatchMethodChanged;
   final ValueChanged<PaintingStyle> onPaintingStyleChanged;
 
   @override
@@ -200,6 +204,24 @@ class MotionControls extends StatelessWidget {
                 ],
                 onChanged: (value) {
                   if (value != null) onMethodChanged(value);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          InputDecorator(
+            decoration: const InputDecoration(labelText: '轮廓匹配方式'),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<ContourMatchMethod>(
+                key: const ValueKey('contour-match-method'),
+                value: contourMatchMethod,
+                isExpanded: true,
+                items: [
+                  for (final option in ContourMatchMethod.values)
+                    DropdownMenuItem(value: option, child: Text(option.name)),
+                ],
+                onChanged: (value) {
+                  if (value != null) onContourMatchMethodChanged(value);
                 },
               ),
             ),

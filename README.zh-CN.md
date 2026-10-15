@@ -63,7 +63,8 @@ GestureDetector(
 | `strokeWidth` | `5` | 设置描边宽度，单位为逻辑像素，仅描边模式使用。 |
 | `strokeCap` | `StrokeCap.round` | 设置开放线条的端点样式：`butt` 平头、`round` 圆头、`square` 方头。 |
 | `strokeJoin` | `StrokeJoin.round` | 设置描边转角样式：`miter` 尖角、`round` 圆角、`bevel` 斜角。 |
-| `combineMethod` | `CombineMethod.space` | 选择变形方式，可选值见下表。 |
+| `combineMethod` | `CombineMethod.space` | 选择采样点补齐方式。 |
+| `contourMatchMethod` | `ContourMatchMethod.ordered` | 选择轮廓之间的匹配方式，与采样点补齐独立。 |
 | `precision` | `1` | 设置采样间距，必须为有限正数。越小越精细，但开销越大，建议先用 `1`。 |
 | `controller` | `null` | 可选，传入保存在 `State` 中的 `PathCombineController()`。通常省略，直接设置 `combineMethod` 即可；它不是控制播放的 `AnimationController`。 |
 | `onEnd` | `null` | 动画结束时执行回调，例如 `() => debugPrint('完成')`。 |
@@ -78,6 +79,18 @@ GestureDetector(
 | `CombineMethod.end` | 在终点补齐。 |
 | `CombineMethod.center` | 在中间位置补齐。 |
 | `CombineMethod.space` | 均匀分布补齐位置，默认方式。 |
+
+`contourMatchMethod` 决定哪个起始轮廓对应哪个目标轮廓：
+
+| 可选值 | 效果 |
+| --- | --- |
+| `ContourMatchMethod.ordered` | 按输入顺序配对，默认保持原有行为。 |
+| `ContourMatchMethod.greedy` | 每次选择当前代价最小的可用轮廓对。 |
+| `ContourMatchMethod.hungarian` | 使用匈牙利算法，最小化总几何匹配代价。 |
+
+组件直接设置 `contourMatchMethod: ContourMatchMethod.hungarian`，也可通过
+`controller.contourMatchMethod = ContourMatchMethod.hungarian` 动态修改。
+与 `combineMethod` 一样，组件参数会在初始化时写入 controller 配置。
 
 ## 图标动画
 

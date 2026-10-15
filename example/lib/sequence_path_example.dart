@@ -82,6 +82,7 @@ class _SequencePathExampleState extends State<SequencePathExample> {
   String? _error;
   double _duration = 1000;
   CombineMethod _method = CombineMethod.space;
+  ContourMatchMethod _contourMatchMethod = ContourMatchMethod.ordered;
   PaintingStyle _paintingStyle = PaintingStyle.stroke;
 
   bool get _dirty => _editRevision != _loadedEditRevision;
@@ -255,9 +256,11 @@ class _SequencePathExampleState extends State<SequencePathExample> {
             child: MotionControls(
               duration: _duration,
               method: _method,
+              contourMatchMethod: _contourMatchMethod,
               paintingStyle: _paintingStyle,
               onDurationChanged: (value) => setState(() => _duration = value),
               onMethodChanged: (value) => setState(() => _method = value),
+              onContourMatchMethodChanged: (value) => setState(() => _contourMatchMethod = value),
               onPaintingStyleChanged: (value) => setState(() => _paintingStyle = value),
             ),
           ),
@@ -388,6 +391,7 @@ class _SequencePathExampleState extends State<SequencePathExample> {
                         duration: Duration(milliseconds: _duration.round()),
                         curve: Curves.easeInOutCubic,
                         combineMethod: _method,
+                        contourMatchMethod: _contourMatchMethod,
                         onEnd: _onEnd,
                       ),
                     ),
@@ -480,6 +484,7 @@ class _SequencePathExampleState extends State<SequencePathExample> {
         '  duration: Duration(milliseconds: ${_duration.round()}),\n'
         '  paintingStyle: PaintingStyle.${_paintingStyle.name},\n'
         '  combineMethod: CombineMethod.${_method.name},\n'
+        '  contourMatchMethod: ContourMatchMethod.${_contourMatchMethod.name},\n'
         '  onEnd: onEnd,\n'
         ');\n\n'
         '// onEnd 中按需安排下一步：\n'

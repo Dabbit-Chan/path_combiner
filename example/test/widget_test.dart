@@ -257,6 +257,16 @@ void main() {
       tester.widget<PathCombiner>(find.byType(PathCombiner)).combineMethod,
       CombineMethod.center,
     );
+    final matching = find.byKey(const ValueKey('contour-match-method'));
+    await tester.ensureVisible(matching);
+    await tester.tap(matching);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('hungarian').last);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<PathCombiner>(find.byType(PathCombiner)).contourMatchMethod,
+      ContourMatchMethod.hungarian,
+    );
     final paintingStyle = find.byKey(const ValueKey('painting-style'));
     await tester.ensureVisible(paintingStyle);
     await tester.tap(find.descendant(of: paintingStyle, matching: find.text('fill')));
