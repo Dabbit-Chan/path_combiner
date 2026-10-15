@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Added `ContourMatchMethod` with `ordered`, `greedy`, and `hungarian` contour matching strategies.
+
 ## 1.0.1+1
 
 * Updated the example app
